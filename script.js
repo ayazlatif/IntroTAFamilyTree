@@ -20,30 +20,9 @@ graph.nodes.forEach(function(d, i) {
     });
 });
 
-var more = {
-    'nodes': [],
-    'links': []
-};
-
-graph.nodes.forEach(function(d, i) {
-    console.log(d + " " + i);
-    more.nodes.push({node: d});
-    more.nodes.push({node: d});
-    more.links.push({
-        source: i * 2,
-        target: i * 2 + 1
-    });
-});
-
-console.log(label);
-
 var labelLayout = d3.forceSimulation(label.nodes)
     .force("charge", d3.forceManyBody().strength(-50))
     .force("link", d3.forceLink(label.links).distance(0).strength(2));
-
-var moreDataLayout = d3.forceSimulation(more.nodes)
-    .force("charge", d3.forceManyBody().strength(-50))
-    .force("link", d3.forceLink(more.links).distance(0).strength(2));
 
 var graphLayout = d3.forceSimulation(graph.nodes)
     .force("charge", d3.forceManyBody().strength(-3000))
@@ -74,13 +53,99 @@ svg.call(
         .on("zoom", function() { container.attr("transform", d3.event.transform); })
 );
 
+var defs = svg.append('defs');
+defs.append('marker')
+    .attr("id", "arrowhead-parent142")
+    .attr("viewBox", "-0 -5 10 10")
+    .attr("refX", "13")
+    .attr("refY", "0")
+    .attr("orient", "auto")
+    .attr("markerWidth", "13")
+    .attr("markerHeight", "13")
+    .attr("xoverflow", "visible")
+    .append("svg:path")
+    .attr("d", 'M 0,-5 L 10 ,0 L 0,5')
+    // .attr('fill', 'yellow')
+    .style('stroke','none');
+
+defs.append('marker')
+    .attr("id", "arrowhead-parent143")
+    .attr("viewBox", "-0 -5 10 10")
+    .attr("refX", "13")
+    .attr("refY", "0")
+    .attr("orient", "auto")
+    .attr("markerWidth", "13")
+    .attr("markerHeight", "13")
+    .attr("xoverflow", "visible")
+    .append("svg:path")
+    .attr("d", 'M 0,-5 L 10 ,0 L 0,5')
+    // .attr('fill', 'red')
+    .style('stroke','none');
+
+defs.append('marker')
+    .attr("id", "arrowhead-parent143x")
+    .attr("viewBox", "-0 -5 10 10")
+    .attr("refX", "13")
+    .attr("refY", "0")
+    .attr("orient", "auto")
+    .attr("markerWidth", "13")
+    .attr("markerHeight", "13")
+    .attr("xoverflow", "visible")
+    .append("svg:path")
+    .attr("d", 'M 0,-5 L 10 ,0 L 0,5')
+    // .attr('fill', 'blue')
+    .style('stroke','none');
+// defs.append('marker')
+//     .attr("id", "arrowhead-parent143")
+//     .attr("viewBox", "-0 -5 10 10")
+//     .attr("refX", "13")
+//     .attr("refY", "0")
+//     .attr("orient", "auto")
+//     .attr("markerWidth", "13")
+//     .attr("markerHeight", "13")
+//     .attr("xoverflow", "visible")
+//     .append("svg:path")
+//     .attr("d", 'M 0,-5 L 10 ,0 L 0,5')
+//     .attr('fill', '#999')
+//     .style('stroke','none');
+
+// defs.append('marker')
+//     .attr("id", "arrowhead-parent143x")
+//     .attr("viewBox", "-0 -5 10 10")
+//     .attr("refX", "13")
+//     .attr("refY", "0")
+//     .attr("orient", "auto")
+//     .attr("markerWidth", "13")
+//     .attr("markerHeight", "13")
+//     .attr("xoverflow", "visible")
+//     .append("svg:path")
+//     .attr("d", 'M 0,-5 L 10 ,0 L 0,5')
+//     .attr('fill', '#999')
+//     .style('stroke','none');
+
+
+        // .attrs({'id':'arrowhead',
+        //     'viewBox':'-0 -5 10 10',
+        //     'refX':13,
+        //     'refY':0,
+        //     'orient':'auto',
+        //     'markerWidth':13,
+        //     'markerHeight':13,
+        //     'xoverflow':'visible'})
+        // .append('svg:path')
+        // .attr('d', 'M 0,-5 L 10 ,0 L 0,5')
+        // .attr('fill', '#999')
+        // .style('stroke','none');
+
 var link = container.append("g").attr("class", "links")
     .selectAll("line")
     .data(graph.links)
     .enter()
     .append("line")
+    .attr("class", function(d) { return d.type })
     .attr("stroke", "#aaa")
-    .attr("stroke-width", "1px");
+    .attr("stroke-width", "1px")
+    .attr('marker-end',function(d) { return `url(#arrowhead-${d.type})`; });
 
 var node = container.append("g").attr("class", "nodes")
     .selectAll("g")
@@ -88,7 +153,7 @@ var node = container.append("g").attr("class", "nodes")
     .enter()
     .append("circle")
     .attr("r", 5)
-    .attr("fill", function(d) { return color(d.group); })
+    .attr("fill", function(d) { return "purple"; });
 
 node.on("mouseover", focus).on("mouseout", unfocus);
 
@@ -110,41 +175,13 @@ var labelNode = container.append("g").attr("class", "labelNodes")
     .style("font-size", 12)
     .style("pointer-events", "none"); // to prevent mouseover/drag capture
 
-var moreData = container.append("g").attr("class", "tooltip")
-    .selectAll("tspan")
-    .data(more.nodes)
-    .enter()
-    .append("text")
-    .style("visibility", "hidden"); 
 
+// node.on("mouseover", focus).on("mouseout", unfocus);
+// node.on("click", stats);
 
-moreData.append("tspan")
-    .text(function(d, i) { return i % 2 == 0 ? "" : "Started: 15au"; })
-    // .style("fill", "#555")
-    // .style("font-family", "Arial")
-    // .style("font-size", 12)
-    // .style("pointer-events", "none");
-
-moreData.append("tspan")
-    .text(function(d, i) { return i % 2 == 0 ? "" : "# quarters: 20"; })
-    .attr("x", "0")
-    .attr("y", "14")
-    // .style("fill", "#555")
-    // .style("font-family", "Arial")
-    // .style("font-size", 12)
-    // .style("pointer-events", "none");
-
-moreData.append("tspan")
-    .text(function(d, i) { return i % 2 == 0 ? "" : "Nicknames: Maxwell Smart"; })
-    .attr("x", "0")
-    .attr("y", "28")
-    // .style("fill", "#555")
-    // .style("font-family", "Arial")
-    // .style("font-size", 12)
-    // .style("pointer-events", "none");
-
-
-node.on("mouseover", focus).on("mouseout", unfocus);
+// function stats(d) {
+    
+// }
 
 function ticked() {
 
@@ -171,27 +208,7 @@ function ticked() {
         }
     });
 
-    moreDataLayout.alphaTarget(0.3).restart();
-    moreData.each(function(d, i) {
-        if(i % 2 == 0) {
-            d.x = d.node.x;
-            d.y = d.node.y + 32;
-        } else {
-            var b = this.getBBox();
-
-            var diffX = d.x - d.node.x;
-            var diffY = d.y - d.node.y;
-
-            var dist = Math.sqrt(diffX * diffX + diffY * diffY);
-
-            var shiftX = b.width * (diffX - dist) / (dist * 2);
-            shiftX = Math.max(-b.width, Math.min(0, shiftX));
-            var shiftY = 32;
-            this.setAttribute("transform", "translate(" + shiftX + "," + shiftY + ")");
-        }
-    });
     labelNode.call(updateNode);
-    moreData.call(updateNode);
 
 }
 
@@ -201,6 +218,11 @@ function fixna(x) {
 }
 
 function focus(d) {
+    var nameTran = d.id.replace(" ", "_").toLowerCase();
+    var imgUrl = `"https://gradeit.cs.washington.edu/uwcse/resources/${nameTran}.jpg"`;
+    document.getElementsByTagName("h1")[0].innerHTML = `<img src=${imgUrl} onerror="this.src='dubs.jpg';" > ${d.id}`;
+    document.getElementsByTagName("h2")[0].innerHTML = "started 15au";
+    document.getElementsByTagName("h3")[0].innerHTML = "20 quarters";
     // console.log(d3.select("#" + d.id));
     // d3.select("#" + d.id).selectAll("text").text(function() { console.log("WHAT"); return "hey"; });
     var index = d3.select(d3.event.target).datum().index;
@@ -211,18 +233,6 @@ function focus(d) {
       return neigh(index, o.node.index) ? "block": "none";
     });
 
-    moreData.style("visibility", function(a, i) { 
-        if (i % 2 == 0) {
-            return  "";
-        } else {
-            if (d.id === a.node.id) {
-                return "visible";
-            } else {
-                return "hidden";
-            }
-        }
-    });
-
     link.style("opacity", function(o) {
         return o.source.index == index || o.target.index == index ? 1 : 0.1;
     });
@@ -230,7 +240,6 @@ function focus(d) {
 
 function unfocus() {
    labelNode.attr("display", "block");
-   moreData.style("visibility", function(d, i) { return i % 2 == 0 ? "" : "hidden"; })
    node.style("opacity", 1);
    link.style("opacity", 1);
 }

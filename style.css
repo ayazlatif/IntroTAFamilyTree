@@ -5,3 +5,39 @@ body {
 .tooltip {
     fill: red;
 }
+
+h1, h2, h3 {
+    position: absolute;
+}
+
+h2 {
+    top: 115px;
+}
+
+h3 {
+    top: 140px;
+}
+
+.parent142, #arrowhead-parent142 {
+    stroke: blue;
+    fill: blue; 
+}
+
+.parent143, #arrowhead-parent143 {
+    stroke: red;
+    fill: red;
+}
+
+
+.parent143x, #arrowhead-parent143x {
+    stroke: green;
+    fill: green;
+}
+
+img {
+    background : url("loader.gif") no-repeat;
+    width: 100px;
+    height: 100px;
+    background-position: center;
+}
+
