@@ -7,31 +7,46 @@ body {
 }
 
 h1, h2, h3 {
+    position: relative;
+    text-align: center;
+}
+
+#infoPanel {
     position: absolute;
+    top: 0px;
+    left: 0px;
+    padding: 10px;
+    margin: 10px;
+    /* background-color: #b566ff; */
+    border-radius: 10px;
 }
 
-h2 {
-    top: 115px;
-}
-
-h3 {
-    top: 140px;
+#legend {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    padding: 10px;
+    margin: 10px;
+    border-style: solid;
 }
 
 .parent142, #arrowhead-parent142 {
-    stroke: blue;
-    fill: blue; 
+    stroke: purple;
+    fill: purple;
+    color: purple;
 }
 
 .parent143, #arrowhead-parent143 {
     stroke: red;
     fill: red;
+    color: red;
 }
 
 
 .parent143x, #arrowhead-parent143x {
-    stroke: green;
-    fill: green;
+    stroke: blue;
+    fill: blue;
+    color: blue;
 }
 
 img {
@@ -39,5 +54,6 @@ img {
     width: 100px;
     height: 100px;
     background-position: center;
+    border-radius: 50%;
 }
 
