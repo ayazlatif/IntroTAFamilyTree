@@ -6,9 +6,29 @@ body {
     fill: red;
 }
 
+.nodes {
+    font-size: 14pt;
+}
+
 h1, h2, h3 {
     position: relative;
     text-align: center;
+}
+
+#search {
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    padding: 10px;
+    margin: 10px;
+}
+
+#cohort {
+    position: absolute;
+    bottom: 0px;
+    right: 0px;
+    padding: 10px;
+    margin: 10px;
 }
 
 #infoPanel {
@@ -50,7 +70,7 @@ h1, h2, h3 {
 }
 
 img {
-    background : url("loader.gif") no-repeat;
+    background : url("resources/loader.gif") no-repeat;
     width: 100px;
     height: 100px;
     background-position: center;

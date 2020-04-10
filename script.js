@@ -1,4 +1,4 @@
-import { buildInfoPanel } from './info_panel.js';
+import { buildInfoPanel, resetInfoPanel, displayCohort } from './info_panel.js';
 
 var width = window.innerWidth;
 var height = window.innerHeight;
@@ -6,7 +6,10 @@ var color = d3.scaleOrdinal(d3.schemeCategory10);
 
 window.onresize = function(){ location.reload(); }
 
-d3.json("big_test.json").then(function(graph) {
+
+
+
+d3.json("./resources/data/beg.json").then(function(graph) {
     var label = {
         'nodes': [],
         'links': []
@@ -25,6 +28,7 @@ d3.json("big_test.json").then(function(graph) {
     var labelLayout = d3.forceSimulation(label.nodes)
         .force("charge", d3.forceManyBody().strength(-50))
         .force("link", d3.forceLink(label.links).distance(0).strength(2));
+
 
     var graphLayout = d3.forceSimulation(graph.nodes)
         .force("charge", d3.forceManyBody().strength(-3000))
@@ -92,10 +96,9 @@ d3.json("big_test.json").then(function(graph) {
         .enter()
         .append("circle")
         .attr("r", 5)
-        .attr("fill", function(d) { return color(d.year); });
+        .attr("fill", function(d) { return color(d.cohort); });
 
     node.on("mouseover", focus).on("mouseout", unfocus);
-    node.on("click", stats);
 
     node.call(
         d3.drag()
@@ -111,17 +114,92 @@ d3.json("big_test.json").then(function(graph) {
         .append("text")
         .text(function(d, i) { return i % 2 == 0 ? "" : d.node.id; })
         .style("pointer-events", "none"); // to prevent mouseover/drag capture
+    
+    document.getElementById("searchBtn").onclick = search;
 
-
-    // node.on("mouseover", focus).on("mouseout", unfocus);
-
-    function stats(d) {
-        node.style("opacity", function(o) {
-            if (o.year == 2007) {
-                console.log("o damn");
+    function search() {
+        resetSearch();
+        var name = document.getElementById("fname").value;
+        name = name.toLowerCase();
+        // var textThings = document.getElementsByClassName("labelNodes")[0].getElementsByTagName("text");
+        // for (var i = 0; i < textThings.length; i++) {
+        //     if (!textThings[i].innerHTML.toLowerCase().startsWith(name)) {
+        //         textThings[i].innerHTML = "";
+        //     }
+        // }
+        // d3.select(".nodes").data()
+        labelNode.each(function(d) {
+            if (d.node.id.toLowerCase().startsWith(name)) {
+                this.setAttribute("font-size", "32");
             }
-            return o.year != 2007 ? 1 : 0.1;
         });
+        var result;
+        node.each(function(d) {
+            if (d.id.toLowerCase().startsWith(name)) {
+                result = d;
+                this.setAttribute("r", 10);
+            } else {
+                this.setAttribute("opacity", "0.1");
+            }
+        });
+
+        buildInfoPanel(result);
+
+        link.each(function(d) {
+            if (d.source.id.toLowerCase().startsWith(name) || d.target.id.toLowerCase().startsWith(name)) {
+                this.setAttribute("opacity", "1");
+            } else {
+                this.setAttribute("opacity", "0.1");
+            }
+        });
+    };
+
+    document.getElementById("reset").onclick = resetSearch;
+
+    function resetSearch() {
+        labelNode.each(function(d) {
+            this.setAttribute("font-size", "14pt");
+        });
+        node.each(function(d) {
+            this.setAttribute("r", 5);
+            this.setAttribute("opacity", "1");
+        });
+
+        link.each(function(d) {
+                this.setAttribute("opacity", "1");
+        });
+
+        resetInfoPanel();
+
+    }
+
+    document.getElementById("cohortSearchBtn").onclick = cohortSearch;
+
+    function cohortSearch() {
+        resetSearch();
+        var cohortList = document.getElementById("cohortList");
+        var cohort = cohortList.options[cohortList.selectedIndex].text;
+
+        labelNode.each(function(d) {
+            // console.log(d.node.cohort === cohort)
+            if (cohort === d.node.cohort) {
+                console.log("hey!")
+                this.setAttribute("font-size", "32");
+            }
+        });
+        node.each(function(d) {
+            if (cohort === d.cohort) {
+                this.setAttribute("r", 10);
+            } else {
+                this.setAttribute("opacity", "0.1");
+            }
+        });
+
+        link.each(function(d) {
+            this.setAttribute("opacity", "0.1");
+        });
+
+        displayCohort(cohort);
     }
 
     function ticked() {
@@ -167,7 +245,7 @@ d3.json("big_test.json").then(function(graph) {
             return neigh(index, o.index) ? 1 : 0.1;
         });
         labelNode.attr("display", function(o) {
-        return neigh(index, o.node.index) ? "block": "none";
+            return neigh(index, o.node.index) ? "block": "none";
         });
 
         link.style("opacity", function(o) {
