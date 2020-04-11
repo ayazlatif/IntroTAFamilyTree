@@ -1,5 +1,5 @@
 import string
-with open('17sp-20wi.csv', 'r') as f:
+with open('05au-20wi.csv', 'r') as f:
     out = open("res.csv", 'w')
     for line in f:
         taInfo = line.strip().split(",")

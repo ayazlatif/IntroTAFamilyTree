@@ -1,10 +1,13 @@
 import copy 
 import json
 import random
-with open('res.csv', 'r') as f:
+import sys
+
+with open(sys.argv[1], 'r') as f:
     cohorts = {}
     tas = {}
     for line in f:
+        line = line.strip() + ","
         taName, ta142, ta143, ta143x, num142, num143, num143x, num14x, cohort = line.split(',')
         tas[taName] = { "id" : taName,
                         "parent142" : ta142,
@@ -14,7 +17,7 @@ with open('res.csv', 'r') as f:
                         "num_143_quarters" : num143,
                         "num_143x_quarters" : num143x,
                         "num_14x_quarters" : num14x,
-                        "cohort" : cohort,
+                        "cohort" : random.randint(0, 3),#cohort.strip(),
                         "img" : taName.replace(" ", "_").lower(),
                         "children" : [] }
         if cohort not in cohorts:
@@ -26,8 +29,19 @@ with open('res.csv', 'r') as f:
 
     def addEdge(parent, child, relation):
         if parent not in tas and parent != "":
-            print("hmm")
-            exit(0)
+            tas[parent] = { "id" : parent,
+                "parent142" : "",
+                "parent143" : "",
+                "parent143x" : "",
+                "num_142_quarters" : 0,
+                "num_143_quarters" : 0,
+                "num_143x_quarters" : 0,
+                "num_14x_quarters" : 0,
+                "cohort" : random.randint(0, 3),                
+                "img" : parent.replace(" ", "_").lower(),
+                "children" : [] }
+            # print("hmm")
+            # exit(0)
             # tas[parent] = { "parent142" : "",
             #             "parent143" : "",
             #             "parent143x" : "",

@@ -12,7 +12,12 @@
         <h1 id="pic">TA Family Tree</h1>
         <h1 id="name"></h1>
         <h2></h2>
-        <h3></h3>
+        <h3 id="num142"></h3>
+        <h3 id="num143"></h3>
+        <h3 id="num143x"></h3>
+        <h3 id="num14x"></h3>
+        <h3 id="total"></h3>
+
     </div>
     <div id="legend">
         <p class="parent142">142 Parent TA</p>
@@ -20,38 +25,52 @@
         <p class="parent143x">143x Parent TA</p>
         <p> <i class="fa fa-trophy" aria-hidden="true"></i> Veteran TA </p>
     </div>
-    <div id="search">
-        <label for="fname">Full Name</label>
-        <input type="text" id="fname" name="fname"><br><br>
-        <button id="searchBtn" type="button">Search TA</button>
-        <button id="reset" type="button">Reset</button>
-    </div>
+    <div id="controls">
+    
+        <div id="cohort">
+            <label for="cohortList">View Cohort</label>
+            <select id="cohortList">
+                <option>15sp</option>
+                <option>15au</option>
 
-    <div id="cohort">
-        <label for="cohortList">View Cohort</label>
-        <select id="cohortList">
-            <option>15sp</option>
-            <option>15au</option>
+                <option>16wi</option>
+                <option>16sp</option>
+                <option>16au</option>
 
-            <option>16wi</option>
-            <option>16sp</option>
-            <option>16au</option>
+                <option>17wi</option>
+                <option>17sp</option>
+                <option>17au</option>
 
-            <option>17wi</option>
-            <option>17sp</option>
-            <option>17au</option>
+                <option>18wi</option>
+                <option>18sp</option>
+                <option>18au</option>
 
-            <option>18wi</option>
-            <option>18sp</option>
-            <option>18au</option>
+                <option>19wi</option>
+                <option>19sp</option>
+                <option>19au</option>
 
-            <option>19wi</option>
-            <option>19sp</option>
-            <option>19au</option>
+                <option>20wi</option>
+            </select>
+            <button id="cohortSearchBtn" type="button">Search Cohort</button>
+        </div>
 
-            <option>20wi</option>
-        </select>
-        <button id="cohortSearchBtn" type="button">Search TA</button>
+        <div id="data">
+            <label for="datasetList">Select Data</label>
+            <select id="datasetList">
+                <option>some-links.json</option>
+                <option>15sp-20wi.json</option>
+                <option>17sp-20wi.json</option>
+                <option>05au-20wi.json</option>
+            </select>
+            <button id="dataBtn" type="button">Load Data</button>
+        </div>
+
+        <div id="search">
+            <label for="fname">Full Name</label>
+            <input type="text" id="fname" name="fname"><br><br>
+            <button id="searchBtn" type="button">Search TA</button>
+            <button id="reset" type="button">Reset</button>
+        </div>
     </div>
 <svg id='viz'></svg>
 </body>
