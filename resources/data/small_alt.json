@@ -1,0 +1,5 @@
+{"id": "a", "cohort": 0, "children" : [
+    {"id": "b", "cohort": 3, "children" : [
+        {"id": "c", "cohort": 2, "children" : []}
+    ]}
+]}
