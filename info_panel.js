@@ -1,10 +1,11 @@
 let COHORT_IMGS = new Set(["15sp", "16sp", "17au", "18au", "18sp", "18wi", "19au", "19sp", "19wi"])
 
-export function buildInfoPanel(data) {
+export function buildInfoPanel(data, color) {
     if (!data.id) {
         return;
     }
     resetInfoPanel();
+    document.getElementById("infoPanel").style.backgroundColor = color;
     var imgUrl = `"https://gradeit.cs.washington.edu/uwcse/resources/${data.img}.jpg"`;
     var img = `<img src=${imgUrl} onerror="this.src='resources/error_pics/dubs.jpg';" >`
     var totalQuarters = sumQuarters(data);
@@ -43,6 +44,7 @@ export function resetInfoPanel() {
     document.getElementById("num143x").innerHTML = "";
     document.getElementById("num14x").innerHTML = "";
     document.getElementById("total").innerHTML = "";
+    document.getElementById("cohortTAs").innerHTML = "";
 }
 
 export function displayCohort(cohort, people) {
@@ -61,7 +63,7 @@ export function displayCohort(cohort, people) {
     var img = `<img src=${imgUrl} >`;
     var pic = document.getElementById("pic");
     pic.innerHTML = img;
-    document.getElementsByTagName("img")[0].style.borderRadius = "0%";
+    document.getElementsByTagName("img")[0].style.borderRadius = "10%";
     document.getElementsByTagName("img")[0].style.width = "300px";
     document.getElementsByTagName("img")[0].style.height = COHORT_IMGS.has(cohort) ? "200px" : "100px";
     document.getElementsByTagName("img")[0].style.background = "none";

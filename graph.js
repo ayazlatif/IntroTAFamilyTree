@@ -1,11 +1,25 @@
 import { buildInfoPanel, resetInfoPanel, displayCohort } from './info_panel.js';
-import { NODE_SIZE, LARGE_NODE_SIZE, LINK_OPACITY, ATTRACTION_FORCE, LINK_STRENGTH } from './index.js';
+import { NODE_SIZE, MEDIUM_NODE_SIZE, LARGE_NODE_SIZE, LIGHT_OPACITY, ATTRACTION_FORCE, LINK_STRENGTH, DURATION } from './index.js';
 import { Queue } from './Queue.js';
+import {autocomplete } from './autocomplete.js';
 var width = window.innerWidth;
 var height = window.innerHeight;
 var node;
 var link;
 var focusNodes = new Set();
+var lightNodes = new Set();
+
+export function getNames() {
+    var result = [];
+    
+    var data = node.data();
+
+    for (var i = 0; i < data.length; i++) {
+        result.push(data[i].id);
+    }
+    // console.log(result);
+    return result;
+}
 
 export function filter(graph, filterSet) {
 
@@ -34,12 +48,12 @@ export function loadGraphFromJson(file, filterSet) {
         filter(graph, filterSet);
         
         var simulation = d3.forceSimulation(graph.nodes)
+            .force("link", d3.forceLink(graph.links).id((d) => d.id)
+                .distance(25).strength(LINK_STRENGTH))
             .force("charge", d3.forceManyBody().strength(ATTRACTION_FORCE))
             .force("x", d3.forceX(function(d) { return width / 2; }).strength(1))
             .force("y", d3.forceY((d) => (parseInt(d.cohort.substring(0, 2)) - 6) * 100)
-                    .strength(1))
-            .force("link", d3.forceLink(graph.links).id((d) => d.id)
-                    .distance(25).strength(LINK_STRENGTH))
+                .strength(1))
             .on("tick", ticked);
 
 
@@ -54,8 +68,15 @@ export function loadGraphFromJson(file, filterSet) {
             return a == b || adjlist[a + "-" + b];
         }
 
-        var svg = d3.select("#viz").attr("width", width).attr("height", height);
+        var svg = d3.select("#viz")
+        .attr("viewBox", `0 0 ${width} ${height}`);
+        // .attr("width", width)
+        // .attr("height", height);
         var container = svg.append("g");
+
+        window.onresize = function() {
+            d3.select("#viz").attr("viewBox", `0 0 ${this.innerWidth} ${this.innerHeight}`);
+        }
 
         
         svg.call(
@@ -90,7 +111,7 @@ export function loadGraphFromJson(file, filterSet) {
             .data(graph.links)
             .enter()
             .append("line")
-            .attr("opacity", "0.2")
+            .attr("opacity", LIGHT_OPACITY)
             .attr("class", function(d) { return d.type })
             .attr("stroke", "#aaa")
             .attr("stroke-width", "1px")
@@ -107,19 +128,35 @@ export function loadGraphFromJson(file, filterSet) {
             .attr("fill", function(d) { return color(d.cohort); });
         
         node.append("text")
-        .attr("display", "none")
-        .text(function(d) { return d.id; });
+            .attr("display", "none")
+            .attr("x", -2*NODE_SIZE)
+            .attr("y", 3*NODE_SIZE)
+            .text(function(d) { return d.id; });
         
         node.on("mouseover", focus).on("mouseout", unfocus);
 
         node.on("click", function() {
             var index = d3.select(this).datum().index;
             if (focusNodes.has(index)) {
+                d3.select(this).select("circle")
+                    .transition().duration(DURATION).attr("r", MEDIUM_NODE_SIZE);
+                d3.select(this).select("text")
+                    .transition().duration(DURATION)
+                    .attr("y", 2*MEDIUM_NODE_SIZE)
                 focusNodes.delete(index);
+                getIndices(this).forEach((a) => lightNodes.delete(a));
             } else {
-                focusNodes.add(d3.select(this).datum().index);
+                d3.select(this).select("circle")
+                    .transition().duration(DURATION)
+                    .attr("r", LARGE_NODE_SIZE);
+                d3.select(this).select("text")
+                    .transition().duration(DURATION)
+                    .attr("y", 1.8*LARGE_NODE_SIZE)
+                focusNodes.add(index);
+                getIndices(this).forEach((a) => lightNodes.add(a));
             }
             console.log(focusNodes);
+            console.log(lightNodes);
         })
         
         node.call(
@@ -130,8 +167,8 @@ export function loadGraphFromJson(file, filterSet) {
         );
         
         document.getElementById("searchBtn").onclick = function() {
-            resetSearch();
-            var name = document.getElementById("fname").value;
+            // resetSearch();
+            var name = document.getElementById("myInput").value;
             name = name.toLowerCase();
         
             var person;
@@ -141,14 +178,22 @@ export function loadGraphFromJson(file, filterSet) {
                 }
             });
 
+            var index = d3.select(person).datum().index;
+            d3.select(person).select("circle")
+                .transition().duration(DURATION).attr("r", LARGE_NODE_SIZE);
+            focusNodes.add(index);
+            getIndices(person).forEach((a) => lightNodes.add(a));
+
             d3.select(person).dispatch("mouseover"); // focus on this
         };
 
         document.getElementById("reset").onclick = resetSearch;
+        autocomplete(document.getElementById("myInput"), getNames());
 
         function resetSearch() {
-            node.select("circle").transition().attr("r", NODE_SIZE).attr("opacity", "1");
-            link.transition().attr("opacity", LINK_OPACITY);
+            focusNodes.clear();
+            lightNodes.clear();
+            unfocus();
             resetInfoPanel();
         }
 
@@ -158,7 +203,7 @@ export function loadGraphFromJson(file, filterSet) {
             var cohortList = document.getElementById("cohortList");
             var cohort = cohortList.options[cohortList.selectedIndex].text;
             var people = [];
-            node.select("circle").transition().attr("r", function(d) {
+            node.select("circle").transition().duration(DURATION).attr("r", function(d) {
                 if (d.cohort) {
                     if (cohort.trim() === d.cohort.trim()) {
                         people.push(d);
@@ -172,12 +217,12 @@ export function loadGraphFromJson(file, filterSet) {
                     if (cohort.trim() === d.cohort.trim()) {
                         return "1"
                     } else {
-                        return "0.1"
+                        return LIGHT_OPACITY;
                     }
                 }
             });
 
-            node.select("text").transition().attr("display", function(d) {
+            node.select("text").transition().duration(DURATION).attr("display", function(d) {
                 if (d.cohort) {
                     if (cohort.trim() === d.cohort.trim()) {
                         return "show";
@@ -188,7 +233,7 @@ export function loadGraphFromJson(file, filterSet) {
             });
 
             link.each(function(d) {
-                this.setAttribute("opacity", LINK_OPACITY);
+                this.setAttribute("opacity", LIGHT_OPACITY);
             });
 
             displayCohort(cohort, people);
@@ -263,22 +308,24 @@ export function loadGraphFromJson(file, filterSet) {
         }
 
         function focus(d) {
-            buildInfoPanel(d); 
+            // console.log();
+            buildInfoPanel(d, d3.select(this).select("circle").attr("fill")); 
             var index = d3.select(this).datum().index;            
             var indicies = getIndices(this);
             
-            node.select("circle").transition().attr("r", function(d) {
-                if (focusNodes.has(d.index) || d.index == index) {
+            node.select("circle").transition().duration(DURATION).attr("r", function(d) {
+                if (focusNodes.has(d.index)) {
                     return LARGE_NODE_SIZE;
+                } else if (d.index == index) {
+                    return MEDIUM_NODE_SIZE;
                 } else {
                     return NODE_SIZE;
                 }
-                
             }).attr("opacity", function(o) {
-                return indicies.has(o.index) ? 1 : 0.1;
+                return indicies.has(o.index) ? 1 : LIGHT_OPACITY;
             });
 
-            node.select("text").transition().attr("display", function(d) {
+            node.select("text").transition().duration(DURATION).attr("display", function(d) {
                 if (indicies.has(d.index)) {
                     return "show";
                 } else {
@@ -288,15 +335,30 @@ export function loadGraphFromJson(file, filterSet) {
             
             );
 
+            d3.select(this).select("text")
+                .transition().duration(DURATION)
+                .attr("y", 2*MEDIUM_NODE_SIZE);
+
             link.style("opacity", function(o) {
-                return indicies.has(o.source.index) && indicies.has(o.target.index) ? 1 : LINK_OPACITY;
+                return indicies.has(o.source.index) && indicies.has(o.target.index) ? 1 : LIGHT_OPACITY;
             });
         }
 
         function unfocus() {
-            node.select("circle").transition().attr("r", NODE_SIZE).attr("opacity", 1);
-            node.select("text").attr("display", "none");
-            link.style("opacity", LINK_OPACITY);
+            node.select("circle").transition().duration(DURATION)
+                .attr("r", (a) => focusNodes.has(a.index) ? LARGE_NODE_SIZE : NODE_SIZE)
+                .attr("opacity", (a) => lightNodes.has(a.index) || lightNodes.size == 0 ? 1 : LIGHT_OPACITY);
+            node.select("text")
+                .attr("display", (a) => lightNodes.has(a.index) ? "show" : "none")
+                .attr("y", function(a) {
+                    if (focusNodes.has(a.index)) {
+                        return 1.8 * LARGE_NODE_SIZE;
+                    } else {
+                        return 3 * NODE_SIZE;
+
+                    }
+                });
+            link.style("opacity", (o) => lightNodes.has(o.source.index) && lightNodes.has(o.target.index) ? 1 : LIGHT_OPACITY);
         }
 
         function dragstarted(d) {
@@ -339,6 +401,35 @@ export function loadGraphFromJson(file, filterSet) {
 
             node.call(updateNode);
             link.call(updateLink);
+        }
+
+        setUpCohorts();
+
+        // set up cohorts
+        function setUpCohorts() {
+
+            var cohorts = [];
+
+            for (var i = 0; i < graph.nodes.length; i++) {
+                var coh = graph.nodes[i].cohort;
+                if (!cohorts.includes(coh)) {
+                    cohorts.push(coh);
+                }
+            }
+            // console.log(cohorts.length);
+            // return;
+            d3.select("#filter")
+                .selectAll("button")
+                .data(cohorts)
+                .enter()
+                .append("button")
+                .attr("type", "button")
+                .attr("id", function(d) { console.log(d); return d; })
+               // .style("background-color", function(d) { return TYPE_COLORS[d];	})
+                .classed("type_button", true)
+                .classed("selected", true) // start with all types selected
+                .text(function(d) { return d; });
+                //.on("click", updateTypeFilter);
         }
 
     });

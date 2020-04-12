@@ -26,6 +26,7 @@
         <p class="parent143x">143x Parent TA</p>
         <p> <i class="fa fa-trophy" aria-hidden="true"></i> Veteran TA </p>
     </div>
+
     <div id="controls">
     
         <div id="cohort">
@@ -55,25 +56,19 @@
             <button id="cohortSearchBtn" type="button">Search Cohort</button>
         </div>
 
-        <div id="data">
-            <label for="datasetList">Select Data</label>
-            <select id="datasetList">
-                <option>all.json</option>
-                <option>some-links.json</option>
-                <option>15sp-20wi.json</option>
-                <option>17sp-20wi.json</option>
-                <option>05au-20wi.json</option>
-            </select>
-            <button id="dataBtn" type="button">Load Data</button>
-        </div>
-
         <div id="search">
-            <label for="fname">Full Name</label>
-            <input type="text" id="fname" name="fname"><br><br>
+            <div class="autocomplete" style="width:300px;">
+                <form autocomplete="off">
+                    <input id="myInput" type="text" name="taName" placeholder="Search TA: Ayaz Latif">
+                </form>
+            </div>
             <button id="searchBtn" type="button">Search TA</button>
             <button id="reset" type="button">Reset</button>
         </div>
     </div>
+
+    <div id="filter"></div>
+    
 <svg id='viz'></svg>
 </body>
 
