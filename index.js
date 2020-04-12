@@ -23,6 +23,7 @@ function changeData() {
 
 document.getElementById("infoPanel").onclick = filter;
 
+// TODO: add filterset to index.html 
 filterSet.add("14au");
 filterSet.add("15wi");
 filterSet.add("15sp");

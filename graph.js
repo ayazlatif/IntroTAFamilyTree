@@ -5,6 +5,7 @@ var width = window.innerWidth;
 var height = window.innerHeight;
 var node;
 var link;
+var focusNodes = new Set();
 
 export function filter(graph, filterSet) {
 
@@ -21,28 +22,6 @@ export function filter(graph, filterSet) {
             graph.links.splice(i, 1);
         }
     }
-}
-
-function ticked() {
-    node.call(updateNode);
-    link.call(updateLink);
-}
-
-function fixNaN(n) {
-    return isFinite(n) ? n : 0;
-}
-
-function updateLink(link) {
-    link.attr("x1", function(d) { return fixNaN(d.source.x); })
-        .attr("y1", function(d) { return fixNaN(d.source.y); })
-        .attr("x2", function(d) { return fixNaN(d.target.x); })
-        .attr("y2", function(d) { return fixNaN(d.target.y); });
-}
-
-function updateNode(node) {
-    node.attr("transform", function(d) {
-        return "translate(" + fixNaN(d.x) + "," + fixNaN(d.y) + ")";
-    });
 }
 
 export function loadGraphFromJson(file, filterSet) {
@@ -132,6 +111,16 @@ export function loadGraphFromJson(file, filterSet) {
         .text(function(d) { return d.id; });
         
         node.on("mouseover", focus).on("mouseout", unfocus);
+
+        node.on("click", function() {
+            var index = d3.select(this).datum().index;
+            if (focusNodes.has(index)) {
+                focusNodes.delete(index);
+            } else {
+                focusNodes.add(d3.select(this).datum().index);
+            }
+            console.log(focusNodes);
+        })
         
         node.call(
             d3.drag()
@@ -237,11 +226,18 @@ export function loadGraphFromJson(file, filterSet) {
             return null;
         }
 
-        function focus(d) {   
-            buildInfoPanel(d);
-            var index = d3.select(this).datum().index;            
-            var children = searchBfs(d3.select(this).datum(), (elm) => elm.children);
-            var parents = searchBfs(d3.select(this).datum(), function(elm) {
+        function getIndices(target) {
+            var children = searchBfs(d3.select(target).datum(), function(elm) {
+                var result = []
+                elm.children.forEach(function(a) {
+                    var item = findData(a.id);
+                    if (item) {
+                        result.push(item);
+                    }
+                })
+                return result;
+            });
+            var parents = searchBfs(d3.select(target).datum(), function(elm) {
                 var result = []
                 var p142 = findData(elm.parent142);
                 if (p142) {
@@ -259,19 +255,31 @@ export function loadGraphFromJson(file, filterSet) {
                 return result;
             });
 
-            node.select("circle").transition().attr("r", function(d) {
-                if (d.index != index) {
-                    return NODE_SIZE;
-                } else {
-                    return LARGE_NODE_SIZE;
+            // parents know the whole family
+            children.forEach(a => parents.add(a)); 
+            var indicies = new Set();
+            parents.forEach(a => indicies.add(a.index));
+            return indicies; 
+        }
 
+        function focus(d) {
+            buildInfoPanel(d); 
+            var index = d3.select(this).datum().index;            
+            var indicies = getIndices(this);
+            
+            node.select("circle").transition().attr("r", function(d) {
+                if (focusNodes.has(d.index) || d.index == index) {
+                    return LARGE_NODE_SIZE;
+                } else {
+                    return NODE_SIZE;
                 }
+                
             }).attr("opacity", function(o) {
-                return neigh(index, o.index) ? 1 : 0.1;
+                return indicies.has(o.index) ? 1 : 0.1;
             });
 
             node.select("text").transition().attr("display", function(d) {
-                if (neigh(index, d.index)) {
+                if (indicies.has(d.index)) {
                     return "show";
                 } else {
                     return "none";
@@ -281,7 +289,7 @@ export function loadGraphFromJson(file, filterSet) {
             );
 
             link.style("opacity", function(o) {
-                return o.source.index == index || o.target.index == index ? 1 : LINK_OPACITY;
+                return indicies.has(o.source.index) && indicies.has(o.target.index) ? 1 : LINK_OPACITY;
             });
         }
 
@@ -307,6 +315,30 @@ export function loadGraphFromJson(file, filterSet) {
             if (!d3.event.active) simulation.alphaTarget(0);
             d.fx = null;
             d.fy = null;
+        }
+
+        // allows for movement of nodes and links
+        function ticked() {
+            function updateLink(link) {
+                link.attr("x1", function(d) { return fixNaN(d.source.x); })
+                    .attr("y1", function(d) { return fixNaN(d.source.y); })
+                    .attr("x2", function(d) { return fixNaN(d.target.x); })
+                    .attr("y2", function(d) { return fixNaN(d.target.y); });
+            }
+
+            // hack for NaN when updating tick
+            function fixNaN(n) {
+                return isFinite(n) ? n : 0;
+            }
+
+            function updateNode(node) {
+                node.attr("transform", function(d) {
+                    return "translate(" + fixNaN(d.x) + "," + fixNaN(d.y) + ")";
+                });
+            }
+
+            node.call(updateNode);
+            link.call(updateLink);
         }
 
     });
