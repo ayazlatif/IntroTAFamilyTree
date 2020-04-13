@@ -13,21 +13,6 @@ const DATA = "./resources/data/all.json";
 
 var filterSet = new Set();
 
-document.getElementById("infoPanel").onclick = filter;
-
 // TODO: add filterset to index.html 
-filterSet.add("14au");
-filterSet.add("15wi");
-filterSet.add("15sp");
-filterSet.add("15au");
-filterSet.add("16wi");
-filterSet.add("16sp");
-filterSet.add("17wi");
-filterSet.add("17sp");
-filterSet.add("17au");
-filterSet.add("18wi");
-filterSet.add("18sp");
-filterSet.add("18au");
 
-// var tas = ["Ayaz Latif", "Will Ceriale"]
 loadGraphFromJson(DATA);

@@ -1,7 +1,15 @@
 import { buildInfoPanel, resetInfoPanel, displayCohort } from './info_panel.js';
-import { NODE_SIZE, MEDIUM_NODE_SIZE, LARGE_NODE_SIZE, LIGHT_OPACITY, ATTRACTION_FORCE, LINK_STRENGTH, DURATION } from './index.js';
+import { NODE_SIZE,
+        MEDIUM_NODE_SIZE,
+        LARGE_NODE_SIZE,
+        LIGHT_OPACITY,
+        ATTRACTION_FORCE,
+        LINK_STRENGTH,
+        DURATION } from './index.js';
 import { Queue } from './Queue.js';
 import {autocomplete } from './autocomplete.js';
+
+var HEIGHT_ADJUST = 50;
 var data;
 
 export function getNames() {
@@ -25,16 +33,16 @@ export function getNames() {
 //     }
 // }
 
-export function loadGraphFromJson(file, filterSet) {
+export function loadGraphFromJson(file) {
     d3.json(file).then(function(graph) {
         data = graph;
-        buildTree(data);
+        buildGraph(data);
     });
 }
 
-function buildTree(data) {
-    var width = document.getElementById("viz").width.baseVal.value;//window.innerWidth;
-    var height = window.innerHeight - 50;
+function buildGraph(data) {
+    var width = document.getElementById("viz").width.baseVal.value;
+    var height = window.innerHeight - HEIGHT_ADJUST;
     var color = d3.scaleOrdinal(d3.schemeCategory10);
 
     var focusNodes = new Set();
@@ -42,22 +50,26 @@ function buildTree(data) {
 
     var svg = d3.select("#viz")
     .attr("viewBox", `0 0 ${width} ${height}`);
-    var container = svg.append("g");
-    var link = container.append("g").attr("class", "links")
-        .selectAll("line")
-        .data(data.links)
-        .enter()
-        .append("line")
-        .attr("opacity", LIGHT_OPACITY)
-        .attr("class", function(d) { return d.type })
-        .attr("stroke", "#aaa")
-        .attr("stroke-width", "1px")
-        .attr('marker-end',function(d) { return `url(#arrowhead-${d.type})`; });
 
-    var node = container.append("g").attr("class", "nodes")
+    var graphContainer = svg.append("g");
+
+    var link = graphContainer
+        .append("g")
+            .attr("class", "links")
+            .selectAll("line")
+            .data(data.links)
+            .enter()
+        .append("line")
+            .attr("opacity", LIGHT_OPACITY)
+            .attr("class", function(d) { return d.type })
+            .attr("stroke", "#aaa")
+            .attr("stroke-width", "1px")
+            .attr('marker-end',function(d) { return `url(#arrowhead-${d.type})`; });
+
+    var node = graphContainer.append("g").attr("class", "nodes")
         .selectAll("g")
-        .data(data.nodes)
-        .enter()
+            .data(data.nodes)
+            .enter()
         .append("g");
 
     node.append("circle")
@@ -70,15 +82,12 @@ function buildTree(data) {
         .attr("y", 3*NODE_SIZE)
         .text(function(d) { return d.id; });    
 
-   
-
     var zoom = d3.zoom()
         .scaleExtent([.4, 1.3])
         .on("zoom", function() { var trans = d3.event.transform;
-            console.log(trans);
-            console.log();
-            container.attr("transform", trans);
+            graphContainer.attr("transform", trans);
         });
+
     setZoom(svg, width / 4, height / 3, 0.4);
     function setZoom(svg, x, y, k) {
         svg.call(zoom).call(zoom.transform, d3.zoomIdentity.translate(x, y).scale(k));
@@ -86,12 +95,11 @@ function buildTree(data) {
 
     window.onresize = function() {
         width = document.getElementById("viz").width.baseVal.value;
-        height = this.innerHeight - 50;
+        height = this.innerHeight - HEIGHT_ADJUST;
         d3.select("#viz").attr("viewBox", `0 0 ${width} ${height}`);
         setZoom(svg, width / 4, height / 3, 0.4);
     }
     
-
     // Arrow heads marker designs
     var defs = svg.append('defs');
     buildArrowHeads(defs);
@@ -116,18 +124,32 @@ function buildTree(data) {
         marker("arrowhead-parent143x");
     }
     
-    
-    
+    function animateNode(node, nodeSize, opacity, yText, display) {
+        node.select("circle")
+            .transition()
+            .duration(DURATION)
+            .attr("r", nodeSize)
+            .attr("opacity", opacity);
+
+        node.select("text")
+            .transition()
+            .duration(DURATION)
+            .attr("y", yText)
+            .attr("display", display);
+    }
+
     node.on("mouseover", focus).on("mouseout", unfocus);
 
+    // Select Node onclick callback
     node.on("click", function() {
         var index = d3.select(this).datum().index;
+        var nodeSize;
+        var opacity = 1;
+        var yText;
+        var display = "show";
         if (focusNodes.has(index)) {
-            d3.select(this).select("circle")
-                .transition().duration(DURATION).attr("r", MEDIUM_NODE_SIZE);
-            d3.select(this).select("text")
-                .transition().duration(DURATION)
-                .attr("y", 2*MEDIUM_NODE_SIZE)
+            nodeSize = MEDIUM_NODE_SIZE;
+            yText = 2 * MEDIUM_NODE_SIZE;
             focusNodes.delete(index);
             getIndices(index).forEach(function(a) {
                 if (focusNodes.has(a)) {
@@ -136,17 +158,16 @@ function buildTree(data) {
                 lightNodes.delete(a);
             });
         } else {
-            d3.select(this).select("circle")
-                .transition().duration(DURATION)
-                .attr("r", LARGE_NODE_SIZE);
-            d3.select(this).select("text")
-                .transition().duration(DURATION)
-                .attr("y", 1.8*LARGE_NODE_SIZE)
+            nodeSize = LARGE_NODE_SIZE;
+            yText = 1.8 * LARGE_NODE_SIZE;
             focusNodes.add(index);
             getIndices(index).forEach((a) => lightNodes.add(a));
         }
+        animateNode(d3.select(this), nodeSize, opacity, yText, display);
+
         // handle case when focus and light node select/deselct overlap
-        focusNodes.forEach((index) => getIndices(index).forEach((a) => lightNodes.add(a)));
+        focusNodes.forEach((index) => getIndices(index)
+            .forEach((a) => lightNodes.add(a)));
     })
     
     node.call(
@@ -157,7 +178,6 @@ function buildTree(data) {
     );
     
     document.getElementById("searchBtn").onclick = function() {
-        // resetSearch();
         var name = document.getElementById("myInput").value;
         name = name.toLowerCase();
     
@@ -169,8 +189,6 @@ function buildTree(data) {
         });
 
         var index = d3.select(person).datum().index;
-        d3.select(person).select("circle")
-            .transition().duration(DURATION).attr("r", LARGE_NODE_SIZE);
         focusNodes.add(index);
         getIndices(index).forEach((a) => lightNodes.add(a));
 
@@ -185,46 +203,23 @@ function buildTree(data) {
         lightNodes.clear();
         unfocus();
         resetInfoPanel();
+        document.getElementById("cohortList").value = "";
+        document.getElementById("myInput").value = "";
     }
 
     document.getElementById("cohortSearchBtn").onclick = searchCohort;
 
     function searchCohort() {
-        // var cohortList = document.getElementById("cohortList");
-        var cohort = document.getElementById("cohortList").value;
-        var people = [];
-        node.select("circle").transition().duration(DURATION).attr("r", function(d) {
-            if (d.cohort) {
-                if (cohort.trim() === d.cohort.trim()) {
-                    people.push(d);
-                    return LARGE_NODE_SIZE;
-                } else {
-                    return NODE_SIZE;
-                }
-            }
-        }).attr("opacity", function(d) {
-            if (d.cohort) {
-                if (cohort.trim() === d.cohort.trim()) {
-                    return "1"
-                } else {
-                    return LIGHT_OPACITY;
-                }
-            }
-        });
+        let cohort = document.getElementById("cohortList").value;
+        var people = data.nodes.filter((d) => d.cohort === cohort);
 
-        node.select("text").transition().duration(DURATION).attr("display", function(d) {
-            if (d.cohort) {
-                if (cohort.trim() === d.cohort.trim()) {
-                    return "show";
-                } else {
-                    return "none";
-                }
-            }
-        });
+        var nodeSize = (d) => cohort === d.cohort ? MEDIUM_NODE_SIZE : NODE_SIZE;
+        var opacity = (d) => cohort === d.cohort ? 1 : LIGHT_OPACITY;
+        var yText = 2 * MEDIUM_NODE_SIZE;
+        var display = (d) => cohort === d.cohort ? "show" : "none";;
 
-        link.each(function(d) {
-            this.setAttribute("opacity", LIGHT_OPACITY);
-        });
+        animateNode(node, nodeSize, opacity, yText, display);
+        link.style("opacity", LIGHT_OPACITY);
 
         displayCohort(cohort, people);
     }
@@ -252,47 +247,21 @@ function buildTree(data) {
     }
 
     function findData(id) {
-        var data = node.data();
-        for (var i = 0; i < data.length; i++) {
-            if (data[i].id === id) {
-                return data[i];
-            }
-        }
-        return null;
+        var result = node.data().filter((d) => d.id === id);
+        return result ? result[0] : null;
     }
 
     function getIndices(targetIndex) {
         var children = searchBfs(targetIndex, function(elm) {
-            var result = []
-            elm.children.forEach(function(a) {
-                var item = findData(a.id);
-                if (item) {
-                    result.push(item);
-                }
-            })
-            return result;
+            return elm.children.map((d) => findData(d.id)).filter((d) => d);
         });
         var parents = searchBfs(targetIndex, function(elm) {
-            var result = []
-            var p142 = findData(elm.parent142);
-            if (p142) {
-                result.push(p142);
-            }
-
-            var p143 = findData(elm.parent143);
-            if (p143) {
-                result.push(p143);
-            }
-            var p143x = findData(elm.parent143x);
-            if (p143x) {
-                result.push(p143x);
-            }
-            return result;
+            var result = [elm.parent142, elm.parent143, elm.parent143x];
+            return result.filter((d) => d).map((d) => findData(d));
         });
 
-        // parents know the whole family
-        children.forEach(a => parents.add(a)); 
         var indicies = new Set();
+        children.forEach(a => indicies.add(a.index));
         parents.forEach(a => indicies.add(a.index));
         return indicies; 
     }
@@ -301,8 +270,8 @@ function buildTree(data) {
         buildInfoPanel(d, d3.select(this).select("circle").attr("fill")); 
         var index = d3.select(this).datum().index;            
         var indicies = getIndices(index);
-        
-        node.select("circle").transition().duration(DURATION).attr("r", function(d) {
+
+        var nodeSize = function(d) {
             if (focusNodes.has(d.index)) {
                 return LARGE_NODE_SIZE;
             } else if (d.index == index) {
@@ -310,49 +279,35 @@ function buildTree(data) {
             } else {
                 return NODE_SIZE;
             }
-        }).attr("opacity", function(o) {
-            return indicies.has(o.index) ? 1 : LIGHT_OPACITY;
-        });
+        };
+        var opacity = (d) => indicies.has(d.index) ? 1 : LIGHT_OPACITY;
+        var yText = 2 * MEDIUM_NODE_SIZE;
+        var display = (d) => indicies.has(d.index) ? "show" : "none";
 
-        node.select("text").transition().duration(DURATION).attr("display", function(d) {
-            if (indicies.has(d.index)) {
-                return "show";
-            } else {
-                return "none";
-            }
-        }
-        
-        );
+        animateNode(node, nodeSize, opacity, yText, display);
 
-        d3.select(this).select("text")
-            .transition().duration(DURATION)
-            .attr("y", 2*MEDIUM_NODE_SIZE);
+        var linkOpacity = (d) => 
+                indicies.has(d.source.index) && indicies.has(d.target.index) ? 1 : LIGHT_OPACITY;
+        var strokeWidth = (d) => indicies.has(d.source.index) && indicies.has(d.target.index) ? "2px" : "1px";
+        animateLinks(link, linkOpacity, strokeWidth);
+    }
 
-        link.style("opacity", function(o) {
-            return indicies.has(o.source.index) && indicies.has(o.target.index) ? 1 : LIGHT_OPACITY;
-        }).style("stroke-width", function(o) {
-            return indicies.has(o.source.index) && indicies.has(o.target.index) ? "2px" : "1px";
-        });
+    function animateLinks(link, opacity, strokeWidth) {
+        link.style("opacity", opacity)
+            .style("stroke-width", strokeWidth);
     }
 
     function unfocus() {
-        node.select("circle").transition().duration(DURATION)
-            .attr("r", (a) => focusNodes.has(a.index) ? LARGE_NODE_SIZE : NODE_SIZE)
-            .attr("opacity", (a) => lightNodes.has(a.index) || lightNodes.size == 0 ? 1 : LIGHT_OPACITY);
-        node.select("text")
-            .attr("display", (a) => lightNodes.has(a.index) ? "show" : "none")
-            .attr("y", function(a) {
-                if (focusNodes.has(a.index)) {
-                    return 1.8 * LARGE_NODE_SIZE;
-                } else {
-                    return 3 * NODE_SIZE;
+        var nodeSize = (d) => focusNodes.has(d.index) ? LARGE_NODE_SIZE : NODE_SIZE;
+        var opacity = (d) => lightNodes.has(d.index) || lightNodes.size == 0 ? 1 : LIGHT_OPACITY;
+        var yText = (d) => focusNodes.has(d.index) ? 1.8 * LARGE_NODE_SIZE : 3 * NODE_SIZE;
+        var display = (d) => lightNodes.has(d.index) ? "show" : "none"
 
-                }
-            });
-        link.style("opacity", (o) => lightNodes.has(o.source.index) && lightNodes.has(o.target.index) ? 1 : LIGHT_OPACITY)
-            .style("stroke-width", function(o) {
-                return lightNodes.has(o.source.index) && lightNodes.has(o.target.index) ? "2px" : "1px";
-            });
+        animateNode(node, nodeSize, opacity, yText, display);
+
+        var linkOpacity = (d) => lightNodes.has(d.source.index) && lightNodes.has(d.target.index) ? 1 : LIGHT_OPACITY;
+        var strokeWidth = (d) => lightNodes.has(d.source.index) && lightNodes.has(d.target.index) ? "2px" : "1px";
+        animateLinks(link, linkOpacity, strokeWidth);
     }
 
     function dragstarted(d) {
@@ -419,19 +374,20 @@ function buildTree(data) {
             .enter()
             .append("button")
             .attr("type", "button")
-            .attr("id", function(d) { console.log(d); return d; })
+            .attr("id", (d) => d)
             // .style("background-color", function(d) { return TYPE_COLORS[d];	})
             .classed("type_button", true)
             .classed("selected", true) // start with all types selected
             .text(function(d) { return d; });
             //.on("click", updateTypeFilter);
     }
+
     var simulation = d3.forceSimulation(data.nodes)
-    .force("link", d3.forceLink(data.links).id((d) => d.id)
-        .distance(25).strength(LINK_STRENGTH))
-    .force("charge", d3.forceManyBody().strength(ATTRACTION_FORCE))
-    .force("x", d3.forceX(function(d) { return width / 2; }).strength(1))
-    .force("y", d3.forceY((d) => (parseInt(d.cohort.substring(0, 2)) - 6) * 100)
-        .strength(1))
-    .on("tick", ticked);
+        .force("link", d3.forceLink(data.links).id((d) => d.id)
+            .distance(25).strength(LINK_STRENGTH))
+        .force("charge", d3.forceManyBody().strength(ATTRACTION_FORCE))
+        .force("x", d3.forceX(function(d) { return width / 2; }).strength(1))
+        .force("y", d3.forceY((d) => (parseInt(d.cohort.substring(0, 2)) - 6) * 100)
+            .strength(1))
+        .on("tick", ticked);
 }

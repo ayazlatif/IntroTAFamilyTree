@@ -1,6 +1,6 @@
 let COHORT_IMGS = new Set(["15sp", "16sp", "17au", "18au", "18sp", "18wi", "19au", "19sp", "19wi"])
 
-export function buildInfoPanel(data, color) {
+export var buildInfoPanel = (function(data, color) {
     if (!data.id) {
         return;
     }
@@ -33,9 +33,9 @@ export function buildInfoPanel(data, color) {
     }
     document.getElementById("total").innerHTML = `total: ${totalQuarters}`;
     // document.getElementsByTagName("h3")[0].innerHTML = `Worked ${data.num_quarters} quarters`;
-}
+});
 
-export function resetInfoPanel() {
+export var resetInfoPanel = (function resetInfoPanel() {
     document.getElementById("pic").innerHTML = "TA Family Tree";
     document.getElementById("name").innerHTML = ""
     document.getElementsByTagName("h2")[0].innerHTML = "";
@@ -45,9 +45,9 @@ export function resetInfoPanel() {
     document.getElementById("num14x").innerHTML = "";
     document.getElementById("total").innerHTML = "";
     document.getElementById("cohortTAs").innerHTML = "";
-}
+});
 
-export function displayCohort(cohort, people) {
+export var displayCohort = (function (cohort, people) {
     resetInfoPanel();
     var avgQuarters = 0;
     var lis = "<ul>";
@@ -70,10 +70,7 @@ export function displayCohort(cohort, people) {
     document.getElementById("name").innerHTML = `${cohort} Cohort`;
     document.getElementById("num142").innerHTML = `Avg # Quarters TA'd: ${avgQuarters.toFixed(2)}`;
     document.getElementById("cohortTAs").innerHTML = lis;
-
-    
-    // document.getElementById("cohortInfo").innerHTML = 
-}
+});
 
 function sumQuarters(taData) {
     return parseInt(taData.num_142_quarters) + 

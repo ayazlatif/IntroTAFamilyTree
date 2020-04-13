@@ -5,6 +5,7 @@
         <link rel="stylesheet" href="style.css">
 
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet'>
         <script src='https://d3js.org/d3.v5.min.js'></script>
     </head>
 <body>
@@ -20,15 +21,28 @@
         <h3 id="total"></h3>
 
     </div>
+
+    <svg id='viz'></svg>
+
     <div id="legend">
-        <p class="parent142">142 Parent TA</p>
-        <p class="parent143">143 Parent TA</p>
-        <p class="parent143x">143x Parent TA</p>
+        <h2>Legend</h2>
+        <p class="parent142">--&gt; 142 Parent TA</p>
+        <p class="parent143">--&gt; 143 Parent TA</p>
+        <p class="parent143x">--&gt; 143x Parent TA</p>
         <p> <i class="fa fa-trophy" aria-hidden="true"></i> Veteran TA </p>
     </div>
 
     <div id="controls">
-    
+        <h2>Search Controls</h2>
+        <div id="search">
+            <div class="autocomplete" >
+                <form autocomplete="off">
+                    <input id="myInput" type="text" name="taName" placeholder="Search TA: Ayaz Latif">
+                </form>
+            </div>
+            <button id="searchBtn" type="button">Search TA</button>
+        </div>
+
         <div id="cohort">
             <div class="autocomplete" >
                 <form autocomplete="off">
@@ -38,20 +52,11 @@
             <button id="cohortSearchBtn" type="button">Search Cohort</button>
         </div>
 
-        <div id="search">
-            <div class="autocomplete" >
-                <form autocomplete="off">
-                    <input id="myInput" type="text" name="taName" placeholder="Search TA: Ayaz Latif">
-                </form>
-            </div>
-            <button id="searchBtn" type="button">Search TA</button>
-        </div>
         <button id="reset" type="button">Reset</button>
     </div>
 
     <div id="filter"></div>
     
-<svg id='viz'></svg>
 </body>
 
 <script type="module" src="index.js"></script>
