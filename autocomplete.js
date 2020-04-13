@@ -13,7 +13,13 @@ export function autocomplete(inp, arr) {
       a = document.createElement("DIV");
       a.setAttribute("id", this.id + "autocomplete-list");
       a.setAttribute("class", "autocomplete-items");
-      a.setAttribute("onclick", `document.getElementById("searchBtn").click();`);
+
+      if (inp.id === "myInput") {
+        a.setAttribute("onclick", `document.getElementById("searchBtn").click();`);
+      } else {
+        a.setAttribute("onclick", `document.getElementById("cohortSearchBtn").click();`);
+      }
+
       /*append the DIV element as a child of the autocomplete container:*/
       this.parentNode.appendChild(a);
       /*for each item in the array...*/

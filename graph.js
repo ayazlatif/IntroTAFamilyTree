@@ -190,8 +190,8 @@ function buildTree(data) {
     document.getElementById("cohortSearchBtn").onclick = searchCohort;
 
     function searchCohort() {
-        var cohortList = document.getElementById("cohortList");
-        var cohort = cohortList.options[cohortList.selectedIndex].text;
+        // var cohortList = document.getElementById("cohortList");
+        var cohort = document.getElementById("cohortList").value;
         var people = [];
         node.select("circle").transition().duration(DURATION).attr("r", function(d) {
             if (d.cohort) {
@@ -351,7 +351,7 @@ function buildTree(data) {
             });
         link.style("opacity", (o) => lightNodes.has(o.source.index) && lightNodes.has(o.target.index) ? 1 : LIGHT_OPACITY)
             .style("stroke-width", function(o) {
-                return indicies.has(o.source.index) && indicies.has(o.target.index) ? "2px" : "1px";
+                return lightNodes.has(o.source.index) && lightNodes.has(o.target.index) ? "2px" : "1px";
             });
     }
 
@@ -410,6 +410,7 @@ function buildTree(data) {
                 cohorts.push(coh);
             }
         }
+        autocomplete(document.getElementById("cohortList"), cohorts);
         // console.log(cohorts.length);
         // return;
         d3.select("#filter")

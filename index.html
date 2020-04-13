@@ -30,41 +30,23 @@
     <div id="controls">
     
         <div id="cohort">
-            <label for="cohortList">View Cohort</label>
-            <select id="cohortList">
-                <option>15sp</option>
-                <option>15au</option>
-
-                <option>16wi</option>
-                <option>16sp</option>
-                <option>16au</option>
-
-                <option>17wi</option>
-                <option>17sp</option>
-                <option>17au</option>
-
-                <option>18wi</option>
-                <option>18sp</option>
-                <option>18au</option>
-
-                <option>19wi</option>
-                <option>19sp</option>
-                <option>19au</option>
-
-                <option>20wi</option>
-            </select>
+            <div class="autocomplete" >
+                <form autocomplete="off">
+                    <input id="cohortList" type="text" name="cohortList" placeholder="View Cohort: 15sp">
+                </form>
+            </div>
             <button id="cohortSearchBtn" type="button">Search Cohort</button>
         </div>
 
         <div id="search">
-            <div class="autocomplete" style="width:300px;">
+            <div class="autocomplete" >
                 <form autocomplete="off">
                     <input id="myInput" type="text" name="taName" placeholder="Search TA: Ayaz Latif">
                 </form>
             </div>
             <button id="searchBtn" type="button">Search TA</button>
-            <button id="reset" type="button">Reset</button>
         </div>
+        <button id="reset" type="button">Reset</button>
     </div>
 
     <div id="filter"></div>

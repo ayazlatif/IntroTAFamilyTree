@@ -11,6 +11,11 @@ body {
     display: inline-block;
 }
 
+#searchBtn, #cohortSearchBtn {
+    /* hack too lazy to delete buttons so hid them :P */
+    display: none; 
+}
+
 @media (min-width: 900px) {
 
     #viz {
