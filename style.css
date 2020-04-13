@@ -11,6 +11,30 @@ body {
     display: inline-block;
 }
 
+@media (min-width: 900px) {
+
+    #viz {
+        width: 75%;
+        display: inline;
+        border: solid;
+    }
+
+    #infoPanel {
+        position: relative;
+        width: 17%;
+        float: left;
+        /* top: 0px;
+        left: 0px; */
+        padding: 20px;
+        margin: 10px;
+        background-color: aliceblue;
+        border-radius: 10%;
+        overflow: auto;
+        /* border-style: solid; */
+    }
+}
+
+
 .autocomplete-items {
     position: absolute;
     border: 1px solid #d4d4d4;
@@ -21,6 +45,7 @@ body {
     top: 100%;
     left: 0;
     right: 0;
+    width: 220px;
 }
 .autocomplete-items div {
     padding: 10px;
@@ -48,7 +73,7 @@ input {
 
 input[type=text] {
     background-color: #f1f1f1;
-    width: 90%;
+    width: 200px;
 }
 
 .nodes {
@@ -94,17 +119,7 @@ h1, h2, h3 {
     overflow: auto;
 }
 
-#infoPanel {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    padding: 20px;
-    margin: 10px;
-    background-color: aliceblue;
-    border-radius: 10%;
-    overflow: auto;
-    /* border-style: solid; */
-}
+
 
 #legend {
     position: absolute;
@@ -118,9 +133,9 @@ h1, h2, h3 {
 }
 
 .parent142, #arrowhead-parent142 {
-    stroke: purple;
-    fill: purple;
-    color: purple;
+    stroke: #FFB20E;;
+    fill: #FFB20E;;
+    color: #FFB20E;;
 }
 
 .parent143, #arrowhead-parent143 {
@@ -147,8 +162,8 @@ img {
 #controls {
     position: absolute;
     top: 0px;
-    right: 0px;
-    width: 300px;
+    right: 300px;
+    width: 100px;
     margin: 10px;
     padding: 10px;
 }

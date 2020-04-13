@@ -1,4 +1,4 @@
-import { loadGraphFromJson, filter, getNames } from './graph.js'
+import { loadGraphFromJson } from './graph.js'
 
 export const NODE_SIZE = 10;
 export const MEDIUM_NODE_SIZE = 20;
@@ -45,4 +45,4 @@ filterSet.add("18sp");
 filterSet.add("18au");
 
 // var tas = ["Ayaz Latif", "Will Ceriale"]
-loadGraphFromJson(DATA, filterSet);
+loadGraphFromJson(DATA);
