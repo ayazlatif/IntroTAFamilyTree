@@ -1,8 +1,8 @@
 import { loadGraphFromJson } from './graph.js'
 
-export const NODE_SIZE = 10;
-export const MEDIUM_NODE_SIZE = 20;
-export const LARGE_NODE_SIZE = 30;
+export const NODE_SIZE = 15;
+export const MEDIUM_NODE_SIZE = 25;
+export const LARGE_NODE_SIZE = 35;
 export const LIGHT_OPACITY = 0.2;
 export const ATTRACTION_FORCE = -800;
 export const START_YEAR = 10;

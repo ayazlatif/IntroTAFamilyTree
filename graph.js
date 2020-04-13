@@ -11,6 +11,9 @@ import {autocomplete } from './autocomplete.js';
 
 var HEIGHT_ADJUST = 50;
 var data;
+var simulation;
+var width = document.getElementById("viz").width.baseVal.value;
+var height = window.innerHeight - HEIGHT_ADJUST;
 
 export function getNames() {
     return data.nodes.map((el) => el.id);
@@ -36,13 +39,76 @@ export function getNames() {
 export function loadGraphFromJson(file) {
     d3.json(file).then(function(graph) {
         data = graph;
+
+        simulation = d3.forceSimulation()
+            .force("link", d3.forceLink().id((d) => d.id)
+                .distance(25).strength(LINK_STRENGTH))
+            .force("charge", d3.forceManyBody().strength(ATTRACTION_FORCE))
+            .force("x", d3.forceX(function(d) { return width / 2; }).strength(1))
+            .force("y", d3.forceY((d) => (parseInt(d.cohort.substring(0, 2)) - 6) * 100)
+                .strength(1))
+            .on("tick", ticked);
+
         buildGraph(data);
+
+        // allows for movement of nodes and links
+        function ticked() {
+            function updateLink(link) {
+                link.attr("x1", function(d) { return fixNaN(d.source.x); })
+                    .attr("y1", function(d) { return fixNaN(d.source.y); })
+                    .attr("x2", function(d) { return fixNaN(d.target.x); })
+                    .attr("y2", function(d) { return fixNaN(d.target.y); });
+            }
+
+            // hack for NaN when updating tick
+            function fixNaN(n) {
+                return isFinite(n) ? n : 0;
+            }
+
+            function updateNode(selection) {
+                selection.attr("transform", function(d) {
+                    return "translate(" + fixNaN(d.x) + "," + fixNaN(d.y) + ")";
+                });
+            }
+
+                d3.select(".nodes").selectAll("g").call(updateNode);
+                d3.select('.links').selectAll("line").call(updateLink);
+            }
+
+        setUpCohorts(data);
+
+        // set up cohorts
+        function setUpCohorts(graph) {
+            var cohorts = [];
+
+            for (var i = 0; i < graph.nodes.length; i++) {
+                var coh = graph.nodes[i].cohort;
+                if (!cohorts.includes(coh)) {
+                    cohorts.push(coh);
+                }
+            }
+            autocomplete(document.getElementById("cohortList"), cohorts);
+            // console.log(cohorts.length);
+            // return;
+            d3.select("#filter")
+                .selectAll("button")
+                .data(cohorts)
+                .enter()
+                .append("button")
+                .attr("type", "button")
+                .attr("id", (d) => d)
+                // .style("background-color", function(d) { return TYPE_COLORS[d];	})
+                .classed("type_button", true)
+                .classed("selected", true) // start with all types selected
+                .text(function(d) { return d; });
+                //.on("click", updateTypeFilter);
+        }
     });
 }
 
 function buildGraph(data) {
-    var width = document.getElementById("viz").width.baseVal.value;
-    var height = window.innerHeight - HEIGHT_ADJUST;
+    width = document.getElementById("viz").width.baseVal.value;
+    height = window.innerHeight - HEIGHT_ADJUST;
     var color = d3.scaleOrdinal(d3.schemeCategory10);
 
     var focusNodes = new Set();
@@ -53,11 +119,15 @@ function buildGraph(data) {
 
     var graphContainer = svg.append("g");
 
-    var link = graphContainer
+    var linkData = graphContainer
         .append("g")
             .attr("class", "links")
             .selectAll("line")
-            .data(data.links)
+            .data(data.links);
+
+    linkData.exit().remove();
+
+    var link = linkData
             .enter()
         .append("line")
             .attr("opacity", LIGHT_OPACITY)
@@ -66,11 +136,47 @@ function buildGraph(data) {
             .attr("stroke-width", "1px")
             .attr('marker-end',function(d) { return `url(#arrowhead-${d.type})`; });
 
-    var node = graphContainer.append("g").attr("class", "nodes")
+    var nodeData = graphContainer.append("g").attr("class", "nodes")
         .selectAll("g")
-            .data(data.nodes)
+            .data(data.nodes, (d) => d.id);
+    nodeData.exit().remove();
+    var node = nodeData
             .enter()
-        .append("g");
+        .append("g")
+        .on("mouseover", focus).on("mouseout", unfocus)
+        .on("click", function() {
+            var index = d3.select(this).datum().index;
+            var nodeSize;
+            var opacity = 1;
+            var yText;
+            var display = "show";
+            if (focusNodes.has(index)) {
+                nodeSize = MEDIUM_NODE_SIZE;
+                yText = 2 * MEDIUM_NODE_SIZE;
+                focusNodes.delete(index);
+                getIndices(index).forEach(function(a) {
+                    if (focusNodes.has(a)) {
+                        return;
+                    }
+                    lightNodes.delete(a);
+                });
+            } else {
+                nodeSize = LARGE_NODE_SIZE;
+                yText = 1.8 * LARGE_NODE_SIZE;
+                focusNodes.add(index);
+                getIndices(index).forEach((a) => lightNodes.add(a));
+            }
+
+            animateNode(d3.select(this), nodeSize, opacity, yText, display);
+            // handle case when focus and light node select/deselct overlap
+            focusNodes.forEach((index) => getIndices(index)
+                .forEach((a) => lightNodes.add(a)));
+        }).call(
+            d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended)
+        );
 
     node.append("circle")
         .attr("r", NODE_SIZE)
@@ -137,52 +243,20 @@ function buildGraph(data) {
             .attr("y", yText)
             .attr("display", display);
     }
-
-    node.on("mouseover", focus).on("mouseout", unfocus);
-
-    // Select Node onclick callback
-    node.on("click", function() {
-        var index = d3.select(this).datum().index;
-        var nodeSize;
-        var opacity = 1;
-        var yText;
-        var display = "show";
-        if (focusNodes.has(index)) {
-            nodeSize = MEDIUM_NODE_SIZE;
-            yText = 2 * MEDIUM_NODE_SIZE;
-            focusNodes.delete(index);
-            getIndices(index).forEach(function(a) {
-                if (focusNodes.has(a)) {
-                    return;
-                }
-                lightNodes.delete(a);
-            });
-        } else {
-            nodeSize = LARGE_NODE_SIZE;
-            yText = 1.8 * LARGE_NODE_SIZE;
-            focusNodes.add(index);
-            getIndices(index).forEach((a) => lightNodes.add(a));
-        }
-        animateNode(d3.select(this), nodeSize, opacity, yText, display);
-
-        // handle case when focus and light node select/deselct overlap
-        focusNodes.forEach((index) => getIndices(index)
-            .forEach((a) => lightNodes.add(a)));
-    })
     
-    node.call(
-        d3.drag()
-            .on("start", dragstarted)
-            .on("drag", dragged)
-            .on("end", dragended)
-    );
+    // node.call(
+    //     d3.drag()
+    //         .on("start", dragstarted)
+    //         .on("drag", dragged)
+    //         .on("end", dragended)
+    // );
     
     document.getElementById("searchBtn").onclick = function() {
         var name = document.getElementById("myInput").value;
         name = name.toLowerCase();
     
         var person;
-        node.each(function(d) {
+        d3.select(".nodes").selectAll("g").each(function(d) {
             if (d.id && d.id.toLowerCase().startsWith(name) && !person) {
                 person = this;
             }
@@ -247,7 +321,7 @@ function buildGraph(data) {
     }
 
     function findData(id) {
-        var result = node.data().filter((d) => d.id === id);
+        var result = d3.select(".nodes").selectAll("g").data().filter((d) => d.id === id);
         return result ? result[0] : null;
     }
 
@@ -328,66 +402,6 @@ function buildGraph(data) {
         d.fy = null;
     }
 
-    // allows for movement of nodes and links
-    function ticked() {
-        function updateLink(link) {
-            link.attr("x1", function(d) { return fixNaN(d.source.x); })
-                .attr("y1", function(d) { return fixNaN(d.source.y); })
-                .attr("x2", function(d) { return fixNaN(d.target.x); })
-                .attr("y2", function(d) { return fixNaN(d.target.y); });
-        }
-
-        // hack for NaN when updating tick
-        function fixNaN(n) {
-            return isFinite(n) ? n : 0;
-        }
-
-        function updateNode(node) {
-            node.attr("transform", function(d) {
-                return "translate(" + fixNaN(d.x) + "," + fixNaN(d.y) + ")";
-            });
-        }
-
-        node.call(updateNode);
-        link.call(updateLink);
-    }
-
-    setUpCohorts(data);
-
-    // set up cohorts
-    function setUpCohorts(graph) {
-
-        var cohorts = [];
-
-        for (var i = 0; i < graph.nodes.length; i++) {
-            var coh = graph.nodes[i].cohort;
-            if (!cohorts.includes(coh)) {
-                cohorts.push(coh);
-            }
-        }
-        autocomplete(document.getElementById("cohortList"), cohorts);
-        // console.log(cohorts.length);
-        // return;
-        d3.select("#filter")
-            .selectAll("button")
-            .data(cohorts)
-            .enter()
-            .append("button")
-            .attr("type", "button")
-            .attr("id", (d) => d)
-            // .style("background-color", function(d) { return TYPE_COLORS[d];	})
-            .classed("type_button", true)
-            .classed("selected", true) // start with all types selected
-            .text(function(d) { return d; });
-            //.on("click", updateTypeFilter);
-    }
-
-    var simulation = d3.forceSimulation(data.nodes)
-        .force("link", d3.forceLink(data.links).id((d) => d.id)
-            .distance(25).strength(LINK_STRENGTH))
-        .force("charge", d3.forceManyBody().strength(ATTRACTION_FORCE))
-        .force("x", d3.forceX(function(d) { return width / 2; }).strength(1))
-        .force("y", d3.forceY((d) => (parseInt(d.cohort.substring(0, 2)) - 6) * 100)
-            .strength(1))
-        .on("tick", ticked);
+    simulation.nodes(data.nodes);
+    simulation.force("link").links(data.links);
 }
