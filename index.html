@@ -10,10 +10,12 @@
     </head>
 <body>
     <div id="infoPanel">
-        <h1 id="pic">TA Family Tree</h1>
+        <h1 id="pic">TA Family Tree Visualization</h1>
         <h1 id="name"></h1>
         <h2 id="cohortInfo"></h2>
-        <div id="cohortTAs"></div>
+        <div id="cohortTAs">
+            <p>Welcome to the TA "family" tree!</p>
+        </div>
         <h3 id="num142"></h3>
         <h3 id="num143"></h3>
         <h3 id="num143x"></h3>
@@ -22,8 +24,34 @@
 
     </div>
 
-    <svg id='viz'></svg>
+    <div id="controls">
+        <svg id='viz'></svg>
 
+        <div id="real">
+            <h2>Search Controls</h2>
+            <div id="search">
+                <div class="autocomplete" >
+                    <form autocomplete="off">
+                        <input id="myInput" type="text" name="taName" placeholder="Search TA: Ayaz Latif">
+                    </form>
+                </div>
+                <button id="searchBtn" type="button">Search TA</button>
+            </div>
+
+            <div id="cohort">
+                <div class="autocomplete" >
+                    <form autocomplete="off">
+                        <input id="cohortList" type="text" name="cohortList" placeholder="View Cohort: 15sp">
+                    </form>
+                </div>
+                <button id="cohortSearchBtn" type="button">Search Cohort</button>
+            </div>
+
+            <button id="reset" type="button">Reset</button>
+            <div id="filter"></div>
+        </div>
+    </div>
+    
     <div id="legend">
         <h2>Legend</h2>
         <p class="parent142">--&gt; 142 Parent TA</p>
@@ -31,31 +59,6 @@
         <p class="parent143x">--&gt; 143x Parent TA</p>
         <p> <i class="fa fa-trophy" aria-hidden="true"></i> Veteran TA </p>
     </div>
-
-    <div id="controls">
-        <h2>Search Controls</h2>
-        <div id="search">
-            <div class="autocomplete" >
-                <form autocomplete="off">
-                    <input id="myInput" type="text" name="taName" placeholder="Search TA: Ayaz Latif">
-                </form>
-            </div>
-            <button id="searchBtn" type="button">Search TA</button>
-        </div>
-
-        <div id="cohort">
-            <div class="autocomplete" >
-                <form autocomplete="off">
-                    <input id="cohortList" type="text" name="cohortList" placeholder="View Cohort: 15sp">
-                </form>
-            </div>
-            <button id="cohortSearchBtn" type="button">Search Cohort</button>
-        </div>
-
-        <button id="reset" type="button">Reset</button>
-        <div id="filter"></div>
-    </div>
-
     
     
 </body>

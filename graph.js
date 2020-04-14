@@ -7,18 +7,69 @@ import { NODE_SIZE,
         LINK_STRENGTH,
         DURATION } from './index.js';
 import { Queue } from './Queue.js';
-import {autocomplete } from './autocomplete.js';
+import { autocomplete } from './autocomplete.js';
 
 var HEIGHT_ADJUST = 50;
 var allData;
 var simulation;
+var node;
+var link;
+
 var width = document.getElementById("viz").width.baseVal.value;
 var height = window.innerHeight - HEIGHT_ADJUST;
 var filterSet = new Set();
-var node;
-var link;
-var svg = d3.select("#viz")
-    .attr("viewBox", `0 0 ${width} ${height}`);
+var focusNodes = new Set();
+var lightNodes = new Set();
+
+var svg = d3.select("#viz");
+var graphContainer = svg.append("g").attr("id", "graph");
+var linkData = graphContainer.append("g").attr("class", "links");
+var nodeData = graphContainer.append("g").attr("class", "nodes");
+var zoom = d3.zoom()
+        .scaleExtent([.1, 1.3])
+        .on("zoom", function() { var trans = d3.event.transform;
+            graphContainer.attr("transform", trans);
+        });
+
+function setZoom(svg, x, y, k) {
+    svg.call(zoom).call(zoom.transform, d3.zoomIdentity.translate(x, y).scale(k));
+}
+
+setZoom(svg, width / 4, height / 3, 0.1);
+
+window.onresize = resizeWindow;
+
+function resizeWindow() {
+    width = document.getElementById("viz").width.baseVal.value;
+    height = window.innerHeight - HEIGHT_ADJUST;
+    d3.select("#viz").attr("viewBox", `0 0 ${width} ${height}`);
+    setZoom(svg, width / 4, height / 3, 0.1);
+}
+
+// Arrow heads marker designs
+var defs = svg.append('defs');
+buildArrowHeads(defs);
+
+function buildArrowHeads(def) {
+    function marker(id) {
+        defs.append('marker')
+            .attr("id", id)
+            .attr("viewBox", "-0 -5 10 10")
+            .attr("refX", "16")
+            .attr("refY", "0")
+            .attr("orient", "auto")
+            .attr("markerWidth", "13")
+            .attr("markerHeight", "13")
+            .attr("xoverflow", "visible")
+            .append("svg:path")
+            .attr("d", 'M 0,-5 L 10 ,0 L 0,5')
+            .style('stroke','none');
+    }
+    marker("arrowhead-parent142");
+    marker("arrowhead-parent143");
+    marker("arrowhead-parent143x");
+}
+
 
 export function getNames() {
     return allData.nodes.map((el) => el.id);
@@ -33,11 +84,48 @@ export function loadGraphFromJson(file) {
                 .distance(25).strength(LINK_STRENGTH))
             .force("charge", d3.forceManyBody().strength(ATTRACTION_FORCE))
             .force("x", d3.forceX(function(d) { return width / 2; }).strength(1))
-            .force("y", d3.forceY((d) => (parseInt(d.cohort.substring(0, 2)) - 6) * 100)
-                .strength(1))
             .on("tick", ticked);
 
         buildGraph(allData);
+
+        setUpYears(allData);
+        resizeWindow();
+        // set up cohorts
+        function setUpYears(graph) {
+            var years = [];
+
+            for (var i = 0; i < graph.nodes.length; i++) {
+                var year = graph.nodes[i].cohort.substring(0, 2);
+                if (!years.includes(year)) {
+                    years.push(year);
+                }
+            }
+
+            d3.select("#filter")
+                .selectAll("button")
+                .data(years)
+                .enter()
+                .append("button")
+                .attr("type", "button")
+                .attr("id", (d) => d)
+                .text(function(d) { return "20" + d; })
+                .on("click", filterYears);
+        }
+
+        function filterYears(d) {
+            if (filterSet.has(d)) {
+                filterSet.delete(d);
+            } else {
+                filterSet.add(d);
+            }
+            var filteredNodes = allData.nodes.filter((d) => !filterSet.has(d.cohort.substring(0, 2)));
+            var filteredLinks = allData.links
+                .filter((d) => !filterSet.has(d.info_src.cohort.substring(0, 2)) &&
+                        !filterSet.has(d.info_child.cohort.substring(0, 2))
+                );
+            buildGraph({nodes : filteredNodes, links : filteredLinks});
+
+        }
 
         // allows for movement of nodes and links
         function ticked() {
@@ -59,106 +147,39 @@ export function loadGraphFromJson(file) {
                 });
             }
 
-                node.call(updateNode);
-                link.call(updateLink);
-            }
-
-        setUpYears(allData);
-
-        // set up cohorts
-        function setUpYears(graph) {
-            var years = [];
-
-            for (var i = 0; i < graph.nodes.length; i++) {
-                var year = graph.nodes[i].cohort.substring(0, 2);
-                if (!years.includes(year)) {
-                    years.push(year);
-                }
-            }
-            // autocomplete(document.getElementById("cohortList"), cohorts);
-
-
-            d3.select("#filter")
-                .selectAll("button")
-                .data(years)
-                .enter()
-                .append("button")
-                .attr("type", "button")
-                .attr("id", (d) => d)
-                // .style("background-color", function(d) { return TYPE_COLORS[d];	})
-                // .classed("type_button", true)
-                // .classed("selected", true) // start with all types selected
-                .text(function(d) { return "20" + d; })
-                .on("click", filterYears);
-        }
-
-        function filterYears(d) {
-            console.log(d);
-            d3.select("#graph").remove();
-            // return;
-            console.log("cleared");
-            console.log(filterSet);
-            if (filterSet.has(d)) {
-                filterSet.delete(d);
-            } else {
-                filterSet.add(d);
-            }
-            var filteredNodes = allData.nodes.filter((d) => !filterSet.has(d.cohort.substring(0, 2)));
-            var removed = allData.nodes.filter((d) => filterSet.has(d.cohort.substring(0, 2)));
-            var filteredLinks = allData.links
-                .filter((d) => !filterSet.has(d.info_src.cohort.substring(0, 2)) &&
-                        !filterSet.has(d.info_child.cohort.substring(0, 2))
-                );
-            console.log(removed);
-            console.log(filteredNodes);
-            console.log(filteredLinks);
-            buildGraph({nodes : filteredNodes, links : filteredLinks});
-
+            node.call(updateNode);
+            link.call(updateLink);
         }
     });
-
-        // Arrow heads marker designs
-        var defs = svg.append('defs');
-        buildArrowHeads(defs);
     
-        function buildArrowHeads(def) {
-            function marker(id) {
-                defs.append('marker')
-                    .attr("id", id)
-                    .attr("viewBox", "-0 -5 10 10")
-                    .attr("refX", "16")
-                    .attr("refY", "0")
-                    .attr("orient", "auto")
-                    .attr("markerWidth", "13")
-                    .attr("markerHeight", "13")
-                    .attr("xoverflow", "visible")
-                    .append("svg:path")
-                    .attr("d", 'M 0,-5 L 10 ,0 L 0,5')
-                    .style('stroke','none');
-            }
-            marker("arrowhead-parent142");
-            marker("arrowhead-parent143");
-            marker("arrowhead-parent143x");
-        }
 }
 
 function buildGraph(data) {
-    width = document.getElementById("viz").width.baseVal.value;
-    height = window.innerHeight - HEIGHT_ADJUST;
     var color = d3.scaleOrdinal(d3.schemeCategory10);
 
-    var focusNodes = new Set();
-    var lightNodes = new Set();
 
-    svg.attr("viewBox", `0 0 ${width} ${height}`);
+    var removeThese = Array.from(focusNodes).filter(function(id) {
+        return !data.nodes.map((d) => d.id).includes(id);
+        // console.log(!data.nodes.map((d) => d.id).includes(id));
+    });
 
-    var graphContainer = svg.append("g").attr("id", "graph");
+    console.log(removeThese);
+    
+    removeThese.forEach((id) => focusNodes.delete(id));
+    console.log(focusNodes);
 
-    var linkData = graphContainer
-        .append("g")
-            .attr("class", "links")
-            .selectAll("line")
-            .data(data.links, function(d) { return d.source + "-" + d.target; });
+    lightNodes.clear();
+    addLightNodes();
+
+    function addLightNodes() {
+        focusNodes.forEach((id) => getLineage(id)
+            .forEach((a) => lightNodes.add(a)));
+    }
+
+    linkData = graphContainer
+        .select(".links")
+        .selectAll("line")
+        .data(data.links, function(d) { return d.source + "-" + d.target; });
 
     linkData.exit().remove();
 
@@ -172,49 +193,18 @@ function buildGraph(data) {
             .attr('marker-end',function(d) { return `url(#arrowhead-${d.type})`; })
             .merge(linkData);
 
-    var nodeData = graphContainer.append("g").attr("class", "nodes")
+    nodeData = graphContainer.select(".nodes")
         .selectAll("g")
             .data(data.nodes, (d) => d.id);
+        
     nodeData.exit().remove();
     node = nodeData
             .enter()
         .append("g")
         .on("mouseover", focus).on("mouseout", unfocus)
-        .on("click", function() {
-            var index = d3.select(this).datum().index;
-            var nodeSize;
-            var opacity = 1;
-            var yText;
-            var display = "show";
-            if (focusNodes.has(index)) {
-                nodeSize = MEDIUM_NODE_SIZE;
-                yText = 2 * MEDIUM_NODE_SIZE;
-                focusNodes.delete(index);
-                getIndices(index).forEach(function(a) {
-                    if (focusNodes.has(a)) {
-                        return;
-                    }
-                    lightNodes.delete(a);
-                });
-            } else {
-                nodeSize = LARGE_NODE_SIZE;
-                yText = 1.8 * LARGE_NODE_SIZE;
-                focusNodes.add(index);
-                getIndices(index).forEach((a) => lightNodes.add(a));
-            }
-
-            animateNode(d3.select(this), nodeSize, opacity, yText, display);
-            // handle case when focus and light node select/deselct overlap
-            focusNodes.forEach((index) => getIndices(index)
-                .forEach((a) => lightNodes.add(a)));
-        }).call(
-            d3.drag()
-                .on("start", dragstarted)
-                .on("drag", dragged)
-                .on("end", dragended)
-        );
-
     node.append("circle")
+        // .transition()
+        // .duration(1000)
         .attr("r", NODE_SIZE)
         .attr("fill", function(d) { return color(d.cohort); });
 
@@ -224,23 +214,48 @@ function buildGraph(data) {
         .attr("y", 3*NODE_SIZE)
         .text(function(d) { return d.id; });
 
-    var zoom = d3.zoom()
-        .scaleExtent([.4, 1.3])
-        .on("zoom", function() { var trans = d3.event.transform;
-            graphContainer.attr("transform", trans);
-        });
+    node = node.merge(nodeData).on("click", function() {
+        var datum = d3.select(this).datum();
+        var nodeSize;
+        var opacity = 1;
+        var yText;
+        var display = "show";
+        if (focusNodes.has(datum.id)) {
+            nodeSize = MEDIUM_NODE_SIZE;
+            yText = 2 * MEDIUM_NODE_SIZE;
+            focusNodes.delete(datum.id);
+            getLineage(datum.id).forEach(function(a) {
+                if (focusNodes.has(a)) {
+                    return;
+                }
+                lightNodes.delete(a);
+            });
+        } else {
+            nodeSize = LARGE_NODE_SIZE;
+            yText = 1.8 * LARGE_NODE_SIZE;
+            focusNodes.add(datum.id);
+        }
 
-    setZoom(svg, width / 4, height / 3, 0.4);
-    function setZoom(svg, x, y, k) {
-        svg.call(zoom).call(zoom.transform, d3.zoomIdentity.translate(x, y).scale(k));
-    }
+        animateNode(d3.select(this), nodeSize, opacity, yText, display);
+        // handle case when focus and light node select/deselct overlap
+        addLightNodes();
+    }).call(
+        d3.drag()
+            .on("start", dragstarted)
+            .on("drag", dragged)
+            .on("end", dragended)
+    );;
 
-    window.onresize = function() {
-        width = document.getElementById("viz").width.baseVal.value;
-        height = this.innerHeight - HEIGHT_ADJUST;
-        d3.select("#viz").attr("viewBox", `0 0 ${width} ${height}`);
-        setZoom(svg, width / 4, height / 3, 0.4);
-    }
+    simulation.nodes(data.nodes);
+    simulation.force("link").links(data.links);
+    simulation.force("y", d3.forceY((d) => (parseInt(d.cohort.substring(0, 2)) - 6) * 100)
+        .strength(1))
+    simulation.alphaTarget(0).restart();
+    unfocus();
+    // setZoom(svg, width / 2, height / 2, 0.4);
+
+    
+    
 
     function animateNode(node, nodeSize, opacity, yText, display) {
         node.select("circle")
@@ -258,18 +273,17 @@ function buildGraph(data) {
 
     document.getElementById("searchBtn").onclick = function() {
         var name = document.getElementById("myInput").value;
-        name = name.toLowerCase();
 
         var person;
         d3.select(".nodes").selectAll("g").each(function(d) {
-            if (d.id && d.id.toLowerCase().startsWith(name) && !person) {
+            if (d.id === name) {
                 person = this;
             }
         });
 
-        var index = d3.select(person).datum().index;
-        focusNodes.add(index);
-        getIndices(index).forEach((a) => lightNodes.add(a));
+
+        focusNodes.add(name);
+        getLineage(name).forEach((a) => lightNodes.add(a));
 
         d3.select(person).dispatch("mouseover"); // focus on this
     };
@@ -278,6 +292,7 @@ function buildGraph(data) {
     autocomplete(document.getElementById("myInput"), getNames());
 
     function resetSearch() {
+        console.log("resetting!");
         focusNodes.clear();
         lightNodes.clear();
         unfocus();
@@ -305,7 +320,7 @@ function buildGraph(data) {
 
     function searchBfs(start, childrenFn) {
         var explore = new Queue();
-        explore.add(data.nodes[start]);
+        explore.add(start);
         var visited = new Set();
         var count = 0;
         while (!explore.isEmpty()) {
@@ -326,17 +341,15 @@ function buildGraph(data) {
     }
 
     function findData(id) {
-        var result = d3.select(".nodes").selectAll("g").data().filter((d) => d.id === id);
+        var result = data.nodes.filter((d) => d.id === id);
         return result ? result[0] : null;
     }
 
-    function getIndices(targetIndex) {
-        // remove 05
-        // joshua may
-        var children = searchBfs(targetIndex, function(elm) {
+    function getLineage(startId) {
+        var children = searchBfs(findData(startId), function(elm) {
             return elm.children.map((d) => findData(d.id)).filter((d) => d);
         });
-        var parents = searchBfs(targetIndex, function(elm) {
+        var parents = searchBfs(findData(startId), function(elm) {
             if (!elm) {
                 return [];
             }
@@ -344,54 +357,55 @@ function buildGraph(data) {
             return result.filter((d) => d).map((d) => findData(d)).filter((d) => d);
         });
 
-        var indicies = new Set();
-        children.forEach(a => indicies.add(a.index));
-        parents.forEach(a => indicies.add(a.index));
-        return indicies;
+        var lineage = new Set();
+        children.forEach(a => lineage.add(a.id));
+        parents.forEach(a => lineage.add(a.id));
+        return lineage;
     }
 
     function focus(d) {
         buildInfoPanel(d, d3.select(this).select("circle").attr("fill"));
-        var index = d3.select(this).datum().index;
-        var indicies = getIndices(index);
+        var id = d3.select(this).datum().id;
+        var lineage = getLineage(id);
 
         var nodeSize = function(d) {
-            if (focusNodes.has(d.index)) {
+            if (focusNodes.has(d.id)) {
                 return LARGE_NODE_SIZE;
-            } else if (d.index == index) {
+            } else if (d.id == id) {
                 return MEDIUM_NODE_SIZE;
             } else {
                 return NODE_SIZE;
             }
         };
-        var opacity = (d) => indicies.has(d.index) ? 1 : LIGHT_OPACITY;
+        var opacity = (d) => lineage.has(d.id) ? 1 : LIGHT_OPACITY;
         var yText = 2 * MEDIUM_NODE_SIZE;
-        var display = (d) => indicies.has(d.index) ? "show" : "none";
+        var display = (d) => lineage.has(d.id) ? "show" : "none";
 
         animateNode(node, nodeSize, opacity, yText, display);
 
         var linkOpacity = (d) =>
-                indicies.has(d.source.index) && indicies.has(d.target.index) ? 1 : LIGHT_OPACITY;
-        var strokeWidth = (d) => indicies.has(d.source.index) && indicies.has(d.target.index) ? "2px" : "1px";
-        animateLinks(link, linkOpacity, strokeWidth);
+                lineage.has(d.source.id) && lineage.has(d.target.id) ? 1 : LIGHT_OPACITY;
+        var strokeWidth = (d) => lineage.has(d.source.id) && lineage.has(d.target.id) ? "2px" : "1px";
+        animateLinks(linkOpacity, strokeWidth);
     }
 
-    function animateLinks(link, opacity, strokeWidth) {
-        link.style("opacity", opacity)
+    function animateLinks(opacity, strokeWidth) {
+        d3.select(".links").selectAll("line").style("opacity", opacity)
             .style("stroke-width", strokeWidth);
     }
 
     function unfocus() {
-        var nodeSize = (d) => focusNodes.has(d.index) ? LARGE_NODE_SIZE : NODE_SIZE;
-        var opacity = (d) => lightNodes.has(d.index) || lightNodes.size == 0 ? 1 : LIGHT_OPACITY;
-        var yText = (d) => focusNodes.has(d.index) ? 1.8 * LARGE_NODE_SIZE : 3 * NODE_SIZE;
-        var display = (d) => lightNodes.has(d.index) ? "show" : "none"
+        console.log(focusNodes);
+        var nodeSize = (d) => focusNodes.has(d.id) ? LARGE_NODE_SIZE : NODE_SIZE;
+        var opacity = (d) => lightNodes.has(d.id) || lightNodes.size == 0 ? 1 : LIGHT_OPACITY;
+        var yText = (d) => focusNodes.has(d.id) ? 1.8 * LARGE_NODE_SIZE : 3 * NODE_SIZE;
+        var display = (d) => lightNodes.has(d.id) ? "show" : "none"
 
         animateNode(node, nodeSize, opacity, yText, display);
 
-        var linkOpacity = (d) => lightNodes.has(d.source.index) && lightNodes.has(d.target.index) ? 1 : LIGHT_OPACITY;
-        var strokeWidth = (d) => lightNodes.has(d.source.index) && lightNodes.has(d.target.index) ? "2px" : "1px";
-        animateLinks(link, linkOpacity, strokeWidth);
+        var linkOpacity = (d) => lightNodes.has(d.source.id) && lightNodes.has(d.target.id) ? 1 : LIGHT_OPACITY;
+        var strokeWidth = (d) => lightNodes.has(d.source.id) && lightNodes.has(d.target.id) ? "2px" : "1px";
+        animateLinks(linkOpacity, strokeWidth);
     }
 
     function dragstarted(d) {
@@ -421,9 +435,4 @@ function buildGraph(data) {
         }
     }
     autocomplete(document.getElementById("cohortList"), cohorts);
-
-    node = node.merge(nodeData);
-    simulation.nodes(data.nodes);
-    simulation.force("link").links(data.links);
-    simulation.restart();
 }

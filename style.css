@@ -2,8 +2,23 @@ body, h1, h2, h3 {
     font-family: 'Roboto';
 }
 
+body {
+    background-color: darkcyan;
+}
+
+p {
+    text-align: center;
+}
+
 .tooltip {
     fill: red;
+}
+
+#real {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    padding: 0px;
 }
 
 .autocomplete {
@@ -16,25 +31,44 @@ body, h1, h2, h3 {
     display: none;
 }
 
-@media (min-width: 900px) {
+#viz {
+    background-color: lightcyan;
+    margin: 0px;
+}
+#infoPanel, #legend {
+    background-color: lightcyan;
+    /* border-style: groove; */
+
+}
+
+#viz {
+    /* border-style: groove; */
+    /* border-radius: 10%; */
+}
+
+#legend {
+    /* border-radius: 20%; */
+}
+
+#infoPanel {
+    /* border-radius: 10%; */
+}
+#infoPanel, #legend {
+    position: relative;
+    float: left;
+    padding: 20px;
+    margin: 10px;
+    overflow: auto;
+}
 
     #viz {
         position: relative;
         float: right;
-        width: 75%;
-        border-style: groove;
-        border-radius: 10%;
+        width: 100%;
     }
 
     #infoPanel, #legend {
-        position: relative;
         width: 17%;
-        float: left;
-        padding: 20px;
-        margin: 10px;
-        background-color: aliceblue;
-        border-radius: 10%;
-        overflow: auto;
     }
 
     #legend {
@@ -42,12 +76,13 @@ body, h1, h2, h3 {
     }
 
     #controls {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        margin: 10px;
-        padding: 10px;
+        position: relative;
+        float: right;
+        margin: 0px;
+        padding: 0px;
         overflow: visible;
+        width: 75%;
+        background-color: lightcyan;
     }
 
     #reset {
@@ -57,7 +92,6 @@ body, h1, h2, h3 {
     #reset:hover {
         background-color: aliceblue;
     }
-}
 
 
 .autocomplete-items {
@@ -128,7 +162,7 @@ h1, h2, h3 {
     /* position: absolute; */
     top: 0px;
     right: 0px;
-    margin: 10px;
+    margin: 0px;
     padding: 20px;
     width: 220px;
     height: 200px;
@@ -136,9 +170,9 @@ h1, h2, h3 {
 }
 
 .parent142, #arrowhead-parent142 {
-    stroke: #FFB20E;;
-    fill: #FFB20E;;
-    color: #FFB20E;;
+    stroke: darkgreen;
+    fill: darkgreen;
+    color: darkgreen;
 }
 
 .parent143, #arrowhead-parent143 {
