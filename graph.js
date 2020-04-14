@@ -10,35 +10,23 @@ import { Queue } from './Queue.js';
 import {autocomplete } from './autocomplete.js';
 
 var HEIGHT_ADJUST = 50;
-var data;
+var allData;
 var simulation;
 var width = document.getElementById("viz").width.baseVal.value;
 var height = window.innerHeight - HEIGHT_ADJUST;
+var filterSet = new Set();
+var node;
+var link;
+var svg = d3.select("#viz")
+    .attr("viewBox", `0 0 ${width} ${height}`);
 
 export function getNames() {
-    return data.nodes.map((el) => el.id);
+    return allData.nodes.map((el) => el.id);
 }
-
-// export function filter(graph, filterSet) {
-
-//     // removes nodes
-//     for (var i = graph.nodes.length - 1 ; i >= 0; i--) {
-//         if (!filterSet.has(graph.nodes[i].cohort)) {
-//             graph.nodes.splice(i, 1);
-//         }
-//     }
-
-//     // removes links
-//     for (var i = graph.links.length - 1; i >= 0; i--) {
-//         if (!filterSet.has(graph.links[i].info_src.cohort) || !filterSet.has(graph.links[i].info_child.cohort)) {
-//             graph.links.splice(i, 1);
-//         }
-//     }
-// }
 
 export function loadGraphFromJson(file) {
     d3.json(file).then(function(graph) {
-        data = graph;
+        allData = graph;
 
         simulation = d3.forceSimulation()
             .force("link", d3.forceLink().id((d) => d.id)
@@ -49,7 +37,7 @@ export function loadGraphFromJson(file) {
                 .strength(1))
             .on("tick", ticked);
 
-        buildGraph(data);
+        buildGraph(allData);
 
         // allows for movement of nodes and links
         function ticked() {
@@ -71,39 +59,87 @@ export function loadGraphFromJson(file) {
                 });
             }
 
-                d3.select(".nodes").selectAll("g").call(updateNode);
-                d3.select('.links').selectAll("line").call(updateLink);
+                node.call(updateNode);
+                link.call(updateLink);
             }
 
-        setUpCohorts(data);
+        setUpYears(allData);
 
         // set up cohorts
-        function setUpCohorts(graph) {
-            var cohorts = [];
+        function setUpYears(graph) {
+            var years = [];
 
             for (var i = 0; i < graph.nodes.length; i++) {
-                var coh = graph.nodes[i].cohort;
-                if (!cohorts.includes(coh)) {
-                    cohorts.push(coh);
+                var year = graph.nodes[i].cohort.substring(0, 2);
+                if (!years.includes(year)) {
+                    years.push(year);
                 }
             }
-            autocomplete(document.getElementById("cohortList"), cohorts);
-            // console.log(cohorts.length);
-            // return;
+            // autocomplete(document.getElementById("cohortList"), cohorts);
+
+
             d3.select("#filter")
                 .selectAll("button")
-                .data(cohorts)
+                .data(years)
                 .enter()
                 .append("button")
                 .attr("type", "button")
                 .attr("id", (d) => d)
                 // .style("background-color", function(d) { return TYPE_COLORS[d];	})
-                .classed("type_button", true)
-                .classed("selected", true) // start with all types selected
-                .text(function(d) { return d; });
-                //.on("click", updateTypeFilter);
+                // .classed("type_button", true)
+                // .classed("selected", true) // start with all types selected
+                .text(function(d) { return "20" + d; })
+                .on("click", filterYears);
+        }
+
+        function filterYears(d) {
+            console.log(d);
+            d3.select("#graph").remove();
+            // return;
+            console.log("cleared");
+            console.log(filterSet);
+            if (filterSet.has(d)) {
+                filterSet.delete(d);
+            } else {
+                filterSet.add(d);
+            }
+            var filteredNodes = allData.nodes.filter((d) => !filterSet.has(d.cohort.substring(0, 2)));
+            var removed = allData.nodes.filter((d) => filterSet.has(d.cohort.substring(0, 2)));
+            var filteredLinks = allData.links
+                .filter((d) => !filterSet.has(d.info_src.cohort.substring(0, 2)) &&
+                        !filterSet.has(d.info_child.cohort.substring(0, 2))
+                );
+            console.log(removed);
+            console.log(filteredNodes);
+            console.log(filteredLinks);
+            buildGraph({nodes : filteredNodes, links : filteredLinks});
+
         }
     });
+
+        // Arrow heads marker designs
+        var defs = svg.append('defs');
+        buildArrowHeads(defs);
+    
+        function buildArrowHeads(def) {
+            function marker(id) {
+                defs.append('marker')
+                    .attr("id", id)
+                    .attr("viewBox", "-0 -5 10 10")
+                    .attr("refX", "16")
+                    .attr("refY", "0")
+                    .attr("orient", "auto")
+                    .attr("markerWidth", "13")
+                    .attr("markerHeight", "13")
+                    .attr("xoverflow", "visible")
+                    .append("svg:path")
+                    .attr("d", 'M 0,-5 L 10 ,0 L 0,5')
+                    .style('stroke','none');
+            }
+            marker("arrowhead-parent142");
+            marker("arrowhead-parent143");
+            marker("arrowhead-parent143x");
+        }
 }
 
 function buildGraph(data) {
@@ -114,33 +150,33 @@ function buildGraph(data) {
     var focusNodes = new Set();
     var lightNodes = new Set();
 
-    var svg = d3.select("#viz")
-    .attr("viewBox", `0 0 ${width} ${height}`);
+    svg.attr("viewBox", `0 0 ${width} ${height}`);
 
-    var graphContainer = svg.append("g");
+    var graphContainer = svg.append("g").attr("id", "graph");
 
     var linkData = graphContainer
         .append("g")
             .attr("class", "links")
             .selectAll("line")
-            .data(data.links);
+            .data(data.links, function(d) { return d.source + "-" + d.target; });
 
     linkData.exit().remove();
 
-    var link = linkData
+    link = linkData
             .enter()
         .append("line")
             .attr("opacity", LIGHT_OPACITY)
             .attr("class", function(d) { return d.type })
             .attr("stroke", "#aaa")
             .attr("stroke-width", "1px")
-            .attr('marker-end',function(d) { return `url(#arrowhead-${d.type})`; });
+            .attr('marker-end',function(d) { return `url(#arrowhead-${d.type})`; })
+            .merge(linkData);
 
     var nodeData = graphContainer.append("g").attr("class", "nodes")
         .selectAll("g")
             .data(data.nodes, (d) => d.id);
     nodeData.exit().remove();
-    var node = nodeData
+    node = nodeData
             .enter()
         .append("g")
         .on("mouseover", focus).on("mouseout", unfocus)
@@ -181,12 +217,12 @@ function buildGraph(data) {
     node.append("circle")
         .attr("r", NODE_SIZE)
         .attr("fill", function(d) { return color(d.cohort); });
-    
+
     node.append("text")
         .attr("display", "none")
         .attr("x", -2*NODE_SIZE)
         .attr("y", 3*NODE_SIZE)
-        .text(function(d) { return d.id; });    
+        .text(function(d) { return d.id; });
 
     var zoom = d3.zoom()
         .scaleExtent([.4, 1.3])
@@ -205,31 +241,7 @@ function buildGraph(data) {
         d3.select("#viz").attr("viewBox", `0 0 ${width} ${height}`);
         setZoom(svg, width / 4, height / 3, 0.4);
     }
-    
-    // Arrow heads marker designs
-    var defs = svg.append('defs');
-    buildArrowHeads(defs);
 
-    function buildArrowHeads(def) {
-        function marker(id) {
-            defs.append('marker')
-                .attr("id", id)
-                .attr("viewBox", "-0 -5 10 10")
-                .attr("refX", "16")
-                .attr("refY", "0")
-                .attr("orient", "auto")
-                .attr("markerWidth", "13")
-                .attr("markerHeight", "13")
-                .attr("xoverflow", "visible")
-                .append("svg:path")
-                .attr("d", 'M 0,-5 L 10 ,0 L 0,5')
-                .style('stroke','none');
-        }
-        marker("arrowhead-parent142");
-        marker("arrowhead-parent143");
-        marker("arrowhead-parent143x");
-    }
-    
     function animateNode(node, nodeSize, opacity, yText, display) {
         node.select("circle")
             .transition()
@@ -243,18 +255,11 @@ function buildGraph(data) {
             .attr("y", yText)
             .attr("display", display);
     }
-    
-    // node.call(
-    //     d3.drag()
-    //         .on("start", dragstarted)
-    //         .on("drag", dragged)
-    //         .on("end", dragended)
-    // );
-    
+
     document.getElementById("searchBtn").onclick = function() {
         var name = document.getElementById("myInput").value;
         name = name.toLowerCase();
-    
+
         var person;
         d3.select(".nodes").selectAll("g").each(function(d) {
             if (d.id && d.id.toLowerCase().startsWith(name) && !person) {
@@ -326,23 +331,28 @@ function buildGraph(data) {
     }
 
     function getIndices(targetIndex) {
+        // remove 05
+        // joshua may
         var children = searchBfs(targetIndex, function(elm) {
             return elm.children.map((d) => findData(d.id)).filter((d) => d);
         });
         var parents = searchBfs(targetIndex, function(elm) {
+            if (!elm) {
+                return [];
+            }
             var result = [elm.parent142, elm.parent143, elm.parent143x];
-            return result.filter((d) => d).map((d) => findData(d));
+            return result.filter((d) => d).map((d) => findData(d)).filter((d) => d);
         });
 
         var indicies = new Set();
         children.forEach(a => indicies.add(a.index));
         parents.forEach(a => indicies.add(a.index));
-        return indicies; 
+        return indicies;
     }
 
     function focus(d) {
-        buildInfoPanel(d, d3.select(this).select("circle").attr("fill")); 
-        var index = d3.select(this).datum().index;            
+        buildInfoPanel(d, d3.select(this).select("circle").attr("fill"));
+        var index = d3.select(this).datum().index;
         var indicies = getIndices(index);
 
         var nodeSize = function(d) {
@@ -360,7 +370,7 @@ function buildGraph(data) {
 
         animateNode(node, nodeSize, opacity, yText, display);
 
-        var linkOpacity = (d) => 
+        var linkOpacity = (d) =>
                 indicies.has(d.source.index) && indicies.has(d.target.index) ? 1 : LIGHT_OPACITY;
         var strokeWidth = (d) => indicies.has(d.source.index) && indicies.has(d.target.index) ? "2px" : "1px";
         animateLinks(link, linkOpacity, strokeWidth);
@@ -402,6 +412,18 @@ function buildGraph(data) {
         d.fy = null;
     }
 
+    var cohorts = [];
+
+    for (var i = 0; i < data.nodes.length; i++) {
+        var coh = data.nodes[i].cohort;
+        if (!cohorts.includes(coh)) {
+            cohorts.push(coh);
+        }
+    }
+    autocomplete(document.getElementById("cohortList"), cohorts);
+
+    node = node.merge(nodeData);
     simulation.nodes(data.nodes);
     simulation.force("link").links(data.links);
+    simulation.restart();
 }

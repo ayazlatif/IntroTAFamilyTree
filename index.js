@@ -13,6 +13,6 @@ const DATA = "./resources/data/all.json";
 
 var filterSet = new Set();
 
-// TODO: add filterset to index.html 
+// TODO: add filterset to index.html
 
 loadGraphFromJson(DATA);
