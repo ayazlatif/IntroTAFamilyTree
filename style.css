@@ -14,6 +14,14 @@ p {
     fill: red;
 }
 
+svg:hover {
+    cursor: move;
+}
+
+circle:hover, button {
+    cursor: pointer;
+}
+
 #real {
     position: absolute;
     top: 0px;
@@ -35,10 +43,14 @@ p {
     background-color: lightcyan;
     margin: 0px;
 }
-#infoPanel, #legend {
-    background-color: lightcyan;
+#infoPanel {
+    background-color: red;
     /* border-style: groove; */
 
+}
+
+#legend {
+    background-color: lightcyan;
 }
 
 #viz {
@@ -78,7 +90,9 @@ p {
     #controls {
         position: relative;
         float: right;
-        margin: 0px;
+        margin-top: 10px;
+        margin-right: 10px;
+        margin-left: 0px;
         padding: 0px;
         overflow: visible;
         width: 75%;
@@ -87,10 +101,8 @@ p {
 
     #reset {
         width: 220px;
-    }
-
-    #reset:hover {
-        background-color: aliceblue;
+        padding: 5px;
+        margin: 0px;
     }
 
 
@@ -163,10 +175,31 @@ h1, h2, h3 {
     top: 0px;
     right: 0px;
     margin: 0px;
-    padding: 20px;
     width: 220px;
     height: 200px;
     overflow: auto;
+}
+
+#filter h3, #search h3 {
+    background-color: goldenrod;
+    padding: 10px;
+    margin: 0px;
+}
+
+/* #filter button:hover {
+    opacity: 0.5;
+} */
+
+#filter h3 {
+    margin-top: 20px;
+}
+
+#filter button {
+    width: 55px;
+    padding: 5px;
+    border: none;
+    font-family: 'Roboto';
+    font-weight: bold;
 }
 
 .parent142, #arrowhead-parent142 {

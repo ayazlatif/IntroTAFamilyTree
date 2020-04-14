@@ -11,8 +11,5 @@ export const LINK_STRENGTH = 0;
 
 const DATA = "./resources/data/all.json";
 
-var filterSet = new Set();
-
-// TODO: add filterset to index.html
-
 loadGraphFromJson(DATA);
+
