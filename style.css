@@ -180,18 +180,44 @@ h1, h2, h3 {
     overflow: auto;
 }
 
-#filter h3, #search h3 {
+#filter h3, #search h3, #familyFilter h3 {
     background-color: goldenrod;
     padding: 10px;
     margin: 0px;
+}
+
+#searchOptions input {
+    position: relative;
+    display: block;
+}
+
+.radio {
+    display: block;
+    padding-left: 50px;
+    /* background-color: lightskyblue; */
+}
+
+.radio label:hover, .radio input:hover {
+    cursor: pointer;
 }
 
 /* #filter button:hover {
     opacity: 0.5;
 } */
 
-#filter h3 {
+#filter h3, #familyFilter {
     margin-top: 20px;
+}
+
+#radios {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    background-color: aliceblue;
+}
+
+#graph circle {
+    stroke: black;
+    stroke-width: 2px;
 }
 
 #filter button {

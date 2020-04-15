@@ -9,16 +9,23 @@ import { NODE_SIZE,
 import { Queue } from './Queue.js';
 import { autocomplete } from './autocomplete.js';
 
+var width = document.getElementById("controls").clientWidth;
+var height = window.innerHeight - HEIGHT_ADJUST;
 var HEIGHT_ADJUST = 50;
+var color = d3.scaleOrdinal(d3.schemeCategory10);
+var filterSet = new Set();
+var focusNodes = new Set();
+var lightNodes = new Set();
+
 var allData;
+var data;
 var simulation;
 var node;
 var link;
-var color = d3.scaleOrdinal(d3.schemeCategory10);
 
-var width = document.getElementById("controls").clientWidth;//document.getElementById("viz").width.baseVal.value;
-var height = window.innerHeight - HEIGHT_ADJUST;
-var filterSet = new Set();
+
+// HACK: initially all nodes are hidden, except one
+// random year from 2011 to 2020
 filterSet.add("05");
 filterSet.add("06");
 filterSet.add("07");
@@ -34,41 +41,14 @@ filterSet.add("16");
 filterSet.add("17");
 filterSet.add("18");
 filterSet.add("19");
-
-
-
-
-
-var focusNodes = new Set();
-var lightNodes = new Set();
+filterSet.add("20");
 
 var svg = d3.select("#viz");
 var graphContainer = svg.append("g").attr("id", "graph");
 var linkData = graphContainer.append("g").attr("class", "links");
 var nodeData = graphContainer.append("g").attr("class", "nodes");
-var zoom = d3.zoom()
-       // .extent([0, 0], [width, height])
-        .on("zoom", function() { var trans = d3.event.transform;
-            var b = d3.select("#graph").node().getBBox();
-            // var width = b.width;
-            var x0 = b.x;
-            var y0 = b.y;
-            var x1 = b.x + b.width;
-            var y1 = b.y + b.height;
-            var t = d3.event.transform;
-            if (t.invertX(0) > x0) t.x = -x0 * t.k;
-            else if (t.invertX(width) < x1) t.x = width - x1 * t.k;
-           // if (t.invertY(0) > y0) t.y = -y0 * t.k;
-           // else if (t.invertY(height) < y1) t.y = height - y1 * t.k;
-            graphContainer.attr("transform", t);
-        });
-zoom.scaleExtent([.1, 1]);//([1, Math.min(width / (x1 - x0), height / (y1 - y0))])
 
-function setZoom(svg, x, y, k) {
-    svg.call(zoom).call(zoom.transform, d3.zoomIdentity.translate(0, 0).scale(k));
-}
-
-// setZoom(svg, width / 4, height / 3, 1);
+setUpZoom();
 
 window.onresize = resizeWindow;
 
@@ -76,7 +56,6 @@ function resizeWindow() {
     width = document.getElementById("viz").width.baseVal.value;
     height = window.innerHeight - HEIGHT_ADJUST;
     d3.select("#viz").attr("viewBox", `0 0 ${width} ${height}`);
-    // setZoom(svg, width / 4, height / 3, 1);
 }
 
 // Arrow heads marker designs
@@ -120,14 +99,47 @@ export function loadGraphFromJson(file) {
             .on("tick", ticked);
         
         setUpYears(allData);
-
-        filterYears("20");
-
-        // buildGraph(allData);
+        setUpCohorts(allData);
+        document.getElementById(Math.floor(Math.random() * 10) + 11).click();
 
         resizeWindow();
-        // set up cohorts
+
         function setUpYears(graph) {
+            function renderYearButtons() {
+                var button = d3.select("#filter")
+                .selectAll("button")
+                .data(years)
+                .enter();
+
+                button.append("button")
+                    .style("background-color", (d) => color(maxCohortCountInYear(cohortCounts, d)))
+                    .style("opacity", 0.3)
+                    .attr("type", "button")
+                    .attr("id", (d) => d)
+                    .text(function(d) { return "20" + d; })
+                    .on("click", filterYears)
+                    .on("mouseover", function() {
+                        d3.select(this).style("opacity", "0.5");
+                    })
+                    .on("mouseout", function() {
+                        d3.select(this).style("opacity", (d) => filterSet.has(d) ? 0.3 : 1);
+                    });
+            }
+
+            function maxCohortCountInYear(cohortCounts, year) {
+                var quarters = [`${year}au`, `${year}su`, `${year}wi`, `${year}sp`];
+                var maxQuarter = '';
+                var max = -Infinity;
+                quarters.forEach(function(elm) {
+                    var currentCount = cohortCounts[elm];
+                    if (cohortCounts[elm] > max) {
+                        max = currentCount;
+                        maxQuarter = elm;
+                    }
+                })
+                return maxQuarter;
+            }
+
             var years = [];
             var cohortCounts = {};
             for (var i = 0; i < graph.nodes.length; i++) {
@@ -141,28 +153,24 @@ export function loadGraphFromJson(file) {
                 }
                 cohortCounts[coh] += 1;
             }
-            var button = d3.select("#filter")
-                .selectAll("button")
-                .data(years)
-                .enter();
-
-            button.append("button")
-                .style("background-color", (d) => color(d))
-                .style("opacity", 0.3)
-                .attr("type", "button")
-                .attr("id", (d) => d)
-                .text(function(d) { return "20" + d; })
-                .on("click", filterYears)
-                .on("mouseover", function() {
-                    d3.select(this).style("opacity", "0.5");
-                })
-                .on("mouseout", function() {
-                    d3.select(this).style("opacity", (d) => filterSet.has(d) ? 0.3 : 1);
-                });
             
+            renderYearButtons();
+        }
+
+        function setUpCohorts(graph) {
+            var cohorts = [];
+
+            for (var i = 0; i < graph.nodes.length; i++) {
+                var coh = graph.nodes[i].cohort;
+                if (!cohorts.includes(coh)) {
+                    cohorts.push(coh);
+                }
+            }
+            autocomplete(document.getElementById("cohortList"), cohorts);
         }
 
         function filterYears(d) {
+            console.log(filterSet);
             if (filterSet.has(d)) {
                 filterSet.delete(d);
                 d3.select(this).style("opacity", 1);
@@ -175,8 +183,9 @@ export function loadGraphFromJson(file) {
                 .filter((d) => !filterSet.has(d.info_src.cohort.substring(0, 2)) &&
                         !filterSet.has(d.info_child.cohort.substring(0, 2))
                 );
-            buildGraph({nodes : filteredNodes, links : filteredLinks});
-
+            console.log(filteredNodes.length);
+            data = {nodes : filteredNodes, links : filteredLinks};
+            renderGraph();
         }
 
         // allows for movement of nodes and links
@@ -195,7 +204,7 @@ export function loadGraphFromJson(file) {
 
             function updateNode(selection) {
                 selection.attr("transform", function(d) {
-                    return "translate(" + Math.max(0, fixNaN(d.x)) + "," + fixNaN(d.y) + ")";
+                    return "translate(" + fixNaN(d.x) + "," + fixNaN(d.y) + ")";
                 });
             }
 
@@ -203,33 +212,22 @@ export function loadGraphFromJson(file) {
             link.call(updateLink);
         }
     });
-    setTimeout(function() {
-        console.log('fire');
-        svg.call(zoom).call(zoom.scaleTo(0.1));
-
-    }, 3000);
+    svg.call(zoom);
 }
 
-function buildGraph(data) {
-
+function renderGraph() {
+    // console.log("rendering");
+    // console.log(data.nodes.length);
     simulation.alpha(0.5);
+    var ids = data.nodes.map((d) => d.id);
     var removeThese = Array.from(focusNodes).filter(function(id) {
-        return !data.nodes.map((d) => d.id).includes(id);
-        // console.log(!data.nodes.map((d) => d.id).includes(id));
+        return !ids.includes(id);
     });
-
-    console.log(removeThese);
     
     removeThese.forEach((id) => focusNodes.delete(id));
-    console.log(focusNodes);
 
     lightNodes.clear();
     addLightNodes();
-
-    function addLightNodes() {
-        focusNodes.forEach((id) => getLineage(id)
-            .forEach((a) => lightNodes.add(a)));
-    }
 
     linkData = graphContainer
         .select(".links")
@@ -260,11 +258,9 @@ function buildGraph(data) {
     node = nodeData
             .enter()
         .append("g")
-        // .attr("y", 0)
-        // .attr("y", (d) => (parseInt(d.cohort.substring(0, 2)) - 5) * 100)
+        .attr("class", (d) => d.cohort)
         .on("mouseover", focus).on("mouseout", unfocus)
     
-    // node.selectAll("g").attr("y", (d) => (parseInt(d.cohort.substring(0, 2)) - 5) * 100);
     node.append("circle")
         .attr("r", NODE_SIZE)
         .attr("fill", function(d) { return color(d.cohort); });
@@ -298,6 +294,7 @@ function buildGraph(data) {
         }
 
         animateNode(d3.select(this), nodeSize, opacity, yText, display);
+
         // handle case when focus and light node select/deselct overlap
         addLightNodes();
     }).call(
@@ -316,24 +313,6 @@ function buildGraph(data) {
 
     simulation.alphaTarget(0.05).restart();
     unfocus();
-    // setZoom(svg, width / 2, height / 2, 0.4);
-
-    
-    
-
-    function animateNode(node, nodeSize, opacity, yText, display) {
-        node.select("circle")
-            .transition()
-            .duration(DURATION)
-            .attr("r", nodeSize)
-            .attr("opacity", opacity);
-
-        node.select("text")
-            .transition()
-            .duration(DURATION)
-            .attr("y", yText)
-            .attr("display", display);
-    }
 
     document.getElementById("searchBtn").onclick = function() {
         var name = document.getElementById("myInput").value;
@@ -345,18 +324,27 @@ function buildGraph(data) {
             }
         });
 
+        if (!person) {
+            var person = allData.nodes.filter((d) => d.id === name)[0];
+            var cohort = person.cohort;
+            var year = cohort.substring(0, 2);
+            buildInfoPanel(person, color(cohort));
+            focusNodes.add(name);
+            document.getElementById(year).click();
+            return;
+        }
+
 
         focusNodes.add(name);
         getLineage(name).forEach((a) => lightNodes.add(a));
 
-        d3.select(person).dispatch("mouseover"); // focus on this
+        d3.select(person).dispatch("mouseout"); // focus on this
     };
 
     document.getElementById("reset").onclick = resetSearch;
     autocomplete(document.getElementById("myInput"), getNames());
 
     function resetSearch() {
-        console.log("resetting!");
         focusNodes.clear();
         lightNodes.clear();
         unfocus();
@@ -367,52 +355,130 @@ function buildGraph(data) {
 
     document.getElementById("cohortSearchBtn").onclick = searchCohort;
 
-    function searchCohort() {
-        let cohort = document.getElementById("cohortList").value;
-        var people = data.nodes.filter((d) => d.cohort === cohort);
 
-        var nodeSize = (d) => cohort === d.cohort ? MEDIUM_NODE_SIZE : NODE_SIZE;
-        var opacity = (d) => cohort === d.cohort ? 1 : LIGHT_OPACITY;
-        var yText = 2 * MEDIUM_NODE_SIZE;
-        var display = (d) => cohort === d.cohort ? "show" : "none";;
 
-        animateNode(node, nodeSize, opacity, yText, display);
-        link.style("opacity", LIGHT_OPACITY);
+    setOnClickFamilyFilter();
 
-        displayCohort(cohort, people);
+
+    function setOnClickFamilyFilter() { 
+        var elements = document.getElementsByClassName("radio");
+
+        for (var i=0, len=elements.length; i<len; ++i) {
+            elements[i].onclick = function() {
+                lightNodes.clear();
+                addLightNodes();
+                unfocus();
+            };
+        }
     }
 
-    function searchBfs(start, childrenFn) {
-        var explore = new Queue();
-        explore.add(start);
-        var visited = new Set();
-        var count = 0;
-        while (!explore.isEmpty()) {
-            var next = explore.remove()
-            if (visited.has(next)) {
-                continue;
-            }
-            visited.add(next);
-            count += 1;
-            for (var i = 0; i < childrenFn(next).length; i++) {
-                var child = childrenFn(next)[i];
-                if (!visited.has(child)) {
-                    explore.add(child);
-                }
+
+}
+
+
+
+function setUpZoom() {
+    var zoom = d3.zoom()
+            .on("zoom", function() {
+                var b = d3.select("#graph").node().getBBox();
+                var x0 = b.x;
+                var x1 = b.x + b.width;
+                var t = d3.event.transform;
+                if (t.invertX(0) > x0) t.x = -x0 * t.k;
+                else if (t.invertX(width) < x1) t.x = width - x1 * t.k;
+                graphContainer.attr("transform", t);
+            });
+
+    zoom.scaleExtent([.1, 1]);
+}
+
+function addLightNodes() {
+    focusNodes.forEach((id) => getLineage(id)
+        .forEach((d) => lightNodes.add(d)));
+}
+
+function searchCohort() {
+    let cohort = document.getElementById("cohortList").value;
+    console.log("search");
+    console.log(cohort);
+    console.log(data.nodes.map((d) => d.cohort));
+    var people = data.nodes.filter((d) => d.cohort === cohort);
+    console.log(people);
+    if (people.length == 0) {
+        people = allData.nodes.filter((d) => d.cohort === cohort);
+        people.forEach((a) => focusNodes.add(a.id));
+        var year = people[0].cohort.substring(0, 2);
+        document.getElementById(year).click();
+        displayCohort(cohort, people);
+        return;
+    }
+    people.forEach((a) => focusNodes.add(a.id));
+    addLightNodes();
+
+    unfocus()
+
+    displayCohort(cohort, people);
+}
+
+function findData(id) {
+    var result = data.nodes.filter((d) => d.id === id);
+    // console.log(result);
+    console.log(data.nodes.length);
+    return result ? result[0] : undefined;
+}
+
+function searchBfs(start, childrenFn) {
+    var explore = new Queue();
+    explore.add(start);
+    var visited = new Set();
+    var count = 0;
+    while (!explore.isEmpty()) {
+        var next = explore.remove()
+        if (visited.has(next)) {
+            continue;
+        }
+        visited.add(next);
+        count += 1;
+        console.log("visited");
+        console.log(next);
+        for (var i = 0; i < childrenFn(next).length; i++) {
+            var child = childrenFn(next)[i];
+            if (!visited.has(child)) {
+                explore.add(child);
             }
         }
-        return visited;
+    }
+    return visited;
+}
+
+function getLineage(startId) {
+    var familyFilter = getCheckedRadioValue("familySelection");
+    console.log(startId);
+    var lineage = new Set();
+    if (familyFilter === "single") {
+        lineage.add(startId);
     }
 
-    function findData(id) {
-        var result = data.nodes.filter((d) => d.id === id);
-        return result ? result[0] : null;
-    }
-
-    function getLineage(startId) {
+    if (familyFilter === "children" || familyFilter === "all") {
+        console.log("kid");
+        console.log(data);
         var children = searchBfs(findData(startId), function(elm) {
+            console.log(elm);
+            if (!elm) {
+                console.log("o shit");
+                return [];
+            }
+            console.log(elm.children.map((d) => findData(d.id)).filter((d) => d));
             return elm.children.map((d) => findData(d.id)).filter((d) => d);
         });
+        console.log(children);
+        if (children) {
+            children.forEach(function(a) { return lineage.add(a.id); });
+        }
+    }
+
+    if (familyFilter === "parents" || familyFilter === "all") {
+        console.log("parental");
         var parents = searchBfs(findData(startId), function(elm) {
             if (!elm) {
                 return [];
@@ -420,82 +486,100 @@ function buildGraph(data) {
             var result = [elm.parent142, elm.parent143, elm.parent143x];
             return result.filter((d) => d).map((d) => findData(d)).filter((d) => d);
         });
-
-        var lineage = new Set();
-        children.forEach(a => lineage.add(a.id));
+        console.log(parents);
         parents.forEach(a => lineage.add(a.id));
-        return lineage;
     }
+    return lineage;
+}
 
-    function focus(d) {
-        buildInfoPanel(d, d3.select(this).select("circle").attr("fill"));
-        var id = d3.select(this).datum().id;
-        var lineage = getLineage(id);
+function unfocus() {
+    var nodeSize = (d) => focusNodes.has(d.id) ? LARGE_NODE_SIZE : NODE_SIZE;
+    var opacity = (d) => lightNodes.has(d.id) || lightNodes.size == 0 ? 1 : LIGHT_OPACITY;
+    var yText = (d) => focusNodes.has(d.id) ? 1.8 * LARGE_NODE_SIZE : 3 * NODE_SIZE;
+    var display = (d) => lightNodes.has(d.id) ? "show" : "none"
 
-        var nodeSize = function(d) {
-            if (focusNodes.has(d.id)) {
-                return LARGE_NODE_SIZE;
-            } else if (d.id == id) {
-                return MEDIUM_NODE_SIZE;
-            } else {
-                return NODE_SIZE;
-            }
-        };
-        var opacity = (d) => lineage.has(d.id) ? 1 : LIGHT_OPACITY;
-        var yText = 2 * MEDIUM_NODE_SIZE;
-        var display = (d) => lineage.has(d.id) ? "show" : "none";
+    animateNode(node, nodeSize, opacity, yText, display);
 
-        animateNode(node, nodeSize, opacity, yText, display);
+    var linkOpacity = (d) => lightNodes.has(d.source.id) && lightNodes.has(d.target.id) ? 1 : LIGHT_OPACITY;
+    var strokeWidth = (d) => lightNodes.has(d.source.id) && lightNodes.has(d.target.id) ? "2px" : "1px";
+    animateLinks(linkOpacity, strokeWidth);
+}
 
-        var linkOpacity = (d) =>
-                lineage.has(d.source.id) && lineage.has(d.target.id) ? 1 : LIGHT_OPACITY;
-        var strokeWidth = (d) => lineage.has(d.source.id) && lineage.has(d.target.id) ? "2px" : "1px";
-        animateLinks(linkOpacity, strokeWidth);
-    }
+function focus(person) {
+    buildInfoPanel(person, color(person.cohort));
+    var id = person.id;//d3.select(d).datum().id;
 
-    function animateLinks(opacity, strokeWidth) {
-        d3.select(".links").selectAll("line").style("opacity", opacity)
-            .style("stroke-width", strokeWidth);
-    }
-
-    function unfocus() {
-        var nodeSize = (d) => focusNodes.has(d.id) ? LARGE_NODE_SIZE : NODE_SIZE;
-        var opacity = (d) => lightNodes.has(d.id) || lightNodes.size == 0 ? 1 : LIGHT_OPACITY;
-        var yText = (d) => focusNodes.has(d.id) ? 1.8 * LARGE_NODE_SIZE : 3 * NODE_SIZE;
-        var display = (d) => lightNodes.has(d.id) ? "show" : "none"
-
-        animateNode(node, nodeSize, opacity, yText, display);
-
-        var linkOpacity = (d) => lightNodes.has(d.source.id) && lightNodes.has(d.target.id) ? 1 : LIGHT_OPACITY;
-        var strokeWidth = (d) => lightNodes.has(d.source.id) && lightNodes.has(d.target.id) ? "2px" : "1px";
-        animateLinks(linkOpacity, strokeWidth);
-    }
-
-    function dragstarted(d) {
-        d3.event.sourceEvent.stopPropagation();
-        if (!d3.event.active) simulation.alphaTarget(0.5).restart();
-        d.fx = d.x;
-        d.fy = d.y;
-    }
-
-    function dragged(d) {
-        d.fx = d3.event.x;
-        d.fy = d3.event.y;
-    }
-
-    function dragended(d) {
-        if (!d3.event.active) simulation.alphaTarget(0.5);
-        d.fx = null;
-        d.fy = null;
-    }
-
-    var cohorts = [];
-
-    for (var i = 0; i < data.nodes.length; i++) {
-        var coh = data.nodes[i].cohort;
-        if (!cohorts.includes(coh)) {
-            cohorts.push(coh);
+    var lineage = getLineage(person.id);
+    console.log(lineage);
+    var nodeSize = function(d) {
+        if (focusNodes.has(d.id)) {
+            return LARGE_NODE_SIZE;
+        } else if (d.id == id) {
+            return MEDIUM_NODE_SIZE;
+        } else {
+            return NODE_SIZE;
         }
+    };
+
+    var opacity = function(d) { return lineage.has(d.id) ? 1 : LIGHT_OPACITY; };
+    var yText = 2 * MEDIUM_NODE_SIZE;
+    var display = (d) => lineage.has(d.id) ? "show" : "none";
+
+    animateNode(node, nodeSize, opacity, yText, display);
+
+    var linkOpacity = (d) =>
+            lineage.has(d.source.id) && lineage.has(d.target.id) ? 1 : LIGHT_OPACITY;
+    var strokeWidth = (d) => lineage.has(d.source.id) && lineage.has(d.target.id) ? "2px" : "1px";
+    animateLinks(linkOpacity, strokeWidth);
+}
+
+function dragstarted(d) {
+    d3.event.sourceEvent.stopPropagation();
+    if (!d3.event.active) simulation.alphaTarget(0.05).restart();
+    d.fx = d.x;
+    d.fy = d.y;
+}
+
+function dragged(d) {
+    d.fx = d3.event.x;
+    d.fy = d3.event.y;
+}
+
+function dragended(d) {
+    if (!d3.event.active) simulation.alphaTarget(0.05);
+    d.fx = null;
+    d.fy = null;
+}
+
+function familyFilterChange() {
+    
+
+}
+
+function animateNode(selection, nodeSize, opacity, yText, display) {
+    selection.select("circle")
+        .transition()
+        .duration(DURATION)
+        .attr("r", nodeSize)
+        .attr("opacity", opacity);
+
+    selection.select("text")
+        .transition()
+        .duration(DURATION)
+        .attr("y", yText)
+        .attr("display", display);
+}
+
+function animateLinks(opacity, strokeWidth) {
+    d3.select(".links").selectAll("line")
+        .transition().duration(DURATION)
+        .style("opacity", opacity)
+        .style("stroke-width", strokeWidth);
+}
+
+function getCheckedRadioValue(name) {
+    var elements = document.getElementsByName(name);
+    for (var i=0; i<elements.length; i++) {
+        if (elements[i].checked) return elements[i].value;
     }
-    autocomplete(document.getElementById("cohortList"), cohorts);
 }
