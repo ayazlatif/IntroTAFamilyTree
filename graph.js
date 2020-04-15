@@ -5,10 +5,19 @@ import { NODE_SIZE,
         LIGHT_OPACITY,
         ATTRACTION_FORCE,
         LINK_STRENGTH,
-        DURATION } from './index.js';
+        DURATION,
+        Y_TEXT_SMALL,
+        Y_TEXT_MEDIUM,
+        Y_TEXT_LARGE,
+        ATTRACTION_FORCE_TEXT } from './index.js';
 import { Queue } from './Queue.js';
 import { autocomplete } from './autocomplete.js';
 
+const QUARTERS = ['sp', 'wi', 'su', 'au'];
+
+
+
+var separateQuarters = false;
 var width = document.getElementById("controls").clientWidth;
 var height = window.innerHeight - HEIGHT_ADJUST;
 var HEIGHT_ADJUST = 50;
@@ -48,7 +57,29 @@ var graphContainer = svg.append("g").attr("id", "graph");
 var linkData = graphContainer.append("g").attr("class", "links");
 var nodeData = graphContainer.append("g").attr("class", "nodes");
 
-setUpZoom();
+document.getElementById("separateQuarters").onclick = function() {
+    if (separateQuarters) {
+        this.innerHTML = "Separate Quarters"
+    } else {
+        this.innerHTML = "Collapse Quarters"
+    }
+    separateQuarters = !separateQuarters;
+    renderGraph();
+}
+
+// sets up zoom
+var zoom = d3.zoom()
+.on("zoom", function() {
+    var b = d3.select("#graph").node().getBBox();
+    var x0 = b.x;
+    var x1 = b.x + b.width;
+    var t = d3.event.transform;
+    if (t.invertX(0) > x0) t.x = -x0 * t.k;
+    else if (t.invertX(width) < x1) t.x = width - x1 * t.k;
+    graphContainer.attr("transform", t);
+});
+
+zoom.scaleExtent([.1, 1]);
 
 window.onresize = resizeWindow;
 
@@ -112,7 +143,7 @@ export function loadGraphFromJson(file) {
                 .enter();
 
                 button.append("button")
-                    .style("background-color", (d) => color(maxCohortCountInYear(cohortCounts, d)))
+                    .style("background-color", (d) => colorCohort(maxCohortCountInYear(cohortCounts, d)))
                     .style("opacity", 0.3)
                     .attr("type", "button")
                     .attr("id", (d) => d)
@@ -127,10 +158,10 @@ export function loadGraphFromJson(file) {
             }
 
             function maxCohortCountInYear(cohortCounts, year) {
-                var quarters = [`${year}au`, `${year}su`, `${year}wi`, `${year}sp`];
                 var maxQuarter = '';
                 var max = -Infinity;
-                quarters.forEach(function(elm) {
+                QUARTERS.forEach(function(elm) {
+                    elm = `${year}${elm}`;
                     var currentCount = cohortCounts[elm];
                     if (cohortCounts[elm] > max) {
                         max = currentCount;
@@ -263,7 +294,7 @@ function renderGraph() {
     
     node.append("circle")
         .attr("r", NODE_SIZE)
-        .attr("fill", function(d) { return color(d.cohort); });
+        .attr("fill", function(d) { return colorCohort(d.cohort); });
 
     node.append("text")
         .attr("display", "none")
@@ -279,7 +310,7 @@ function renderGraph() {
         var display = "show";
         if (focusNodes.has(datum.id)) {
             nodeSize = MEDIUM_NODE_SIZE;
-            yText = 2 * MEDIUM_NODE_SIZE;
+            yText = Y_TEXT_MEDIUM;
             focusNodes.delete(datum.id);
             getLineage(datum.id).forEach(function(a) {
                 if (focusNodes.has(a)) {
@@ -289,7 +320,7 @@ function renderGraph() {
             });
         } else {
             nodeSize = LARGE_NODE_SIZE;
-            yText = 1.8 * LARGE_NODE_SIZE;
+            yText = Y_TEXT_LARGE;
             focusNodes.add(datum.id);
         }
 
@@ -307,8 +338,15 @@ function renderGraph() {
     simulation.nodes(data.nodes);
     simulation.force("link").links(data.links);
     simulation.force("y", d3.forceY(function (d) { 
+        var quarter = d.cohort.substring(2);
+        var adjust = 0;
+        if (separateQuarters) {
+            adjust = QUARTERS.indexOf(quarter) - 1;
+        }
+        console.log(adjust);
         var minYear = parseInt(Math.min(...data.nodes.map((d) => d.cohort.substring(0, 2))));
-        return (parseInt(d.cohort.substring(0, 2)) - minYear + 5) * 100; 
+
+        return ((parseInt(d.cohort.substring(0, 2)) - minYear + 5) * 100) + adjust * 100;
     }).strength(1));
 
     simulation.alphaTarget(0.05).restart();
@@ -328,7 +366,7 @@ function renderGraph() {
             var person = allData.nodes.filter((d) => d.id === name)[0];
             var cohort = person.cohort;
             var year = cohort.substring(0, 2);
-            buildInfoPanel(person, color(cohort));
+            buildInfoPanel(person, colorCohort(cohort));
             focusNodes.add(name);
             document.getElementById(year).click();
             return;
@@ -373,23 +411,6 @@ function renderGraph() {
     }
 
 
-}
-
-
-
-function setUpZoom() {
-    var zoom = d3.zoom()
-            .on("zoom", function() {
-                var b = d3.select("#graph").node().getBBox();
-                var x0 = b.x;
-                var x1 = b.x + b.width;
-                var t = d3.event.transform;
-                if (t.invertX(0) > x0) t.x = -x0 * t.k;
-                else if (t.invertX(width) < x1) t.x = width - x1 * t.k;
-                graphContainer.attr("transform", t);
-            });
-
-    zoom.scaleExtent([.1, 1]);
 }
 
 function addLightNodes() {
@@ -493,9 +514,15 @@ function getLineage(startId) {
 }
 
 function unfocus() {
+    // if (focusNodes.size > 0) {
+    //     simulation.force("charge", d3.forceManyBody().strength(ATTRACTION_FORCE_TEXT));
+    // } else {
+    //     simulation.forEach("charge", d3.forceManyBody().strength(ATTRACTION_FORCE));
+    // }
+    // // simulation.alphaTarget(0.05).restart();
     var nodeSize = (d) => focusNodes.has(d.id) ? LARGE_NODE_SIZE : NODE_SIZE;
     var opacity = (d) => lightNodes.has(d.id) || lightNodes.size == 0 ? 1 : LIGHT_OPACITY;
-    var yText = (d) => focusNodes.has(d.id) ? 1.8 * LARGE_NODE_SIZE : 3 * NODE_SIZE;
+    var yText = (d) => focusNodes.has(d.id) ? Y_TEXT_LARGE : Y_TEXT_SMALL;
     var display = (d) => lightNodes.has(d.id) ? "show" : "none"
 
     animateNode(node, nodeSize, opacity, yText, display);
@@ -506,7 +533,10 @@ function unfocus() {
 }
 
 function focus(person) {
-    buildInfoPanel(person, color(person.cohort));
+    // simulation.force("charge", d3.forceManyBody().strength(ATTRACTION_FORCE_TEXT));
+    // simulation.alphaTarget(0.05).restart();
+
+    buildInfoPanel(person, colorCohort(person.cohort));
     var id = person.id;//d3.select(d).datum().id;
 
     var lineage = getLineage(person.id);
@@ -522,7 +552,7 @@ function focus(person) {
     };
 
     var opacity = function(d) { return lineage.has(d.id) ? 1 : LIGHT_OPACITY; };
-    var yText = 2 * MEDIUM_NODE_SIZE;
+    var yText = (d) => focusNodes.has(d.id) ? Y_TEXT_LARGE : Y_TEXT_SMALL;
     var display = (d) => lineage.has(d.id) ? "show" : "none";
 
     animateNode(node, nodeSize, opacity, yText, display);
@@ -582,4 +612,10 @@ function getCheckedRadioValue(name) {
     for (var i=0; i<elements.length; i++) {
         if (elements[i].checked) return elements[i].value;
     }
+}
+
+function colorCohort(cohort) {
+    // experimented with this don't like it but keeping it in case for future
+    //return color(QUARTERS.indexOf(cohort.substring(2)));
+    return color(cohort);
 }

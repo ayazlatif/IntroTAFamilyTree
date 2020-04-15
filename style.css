@@ -99,7 +99,7 @@ circle:hover, button {
         background-color: lightcyan;
     }
 
-    #reset {
+    #reset, #separateQuarters {
         width: 220px;
         padding: 5px;
         margin: 0px;
