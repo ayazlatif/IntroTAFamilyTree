@@ -285,8 +285,8 @@ h1, h2, h3 {
 
 img {
     background : url("resources/loader.gif") no-repeat;
-    width: 100px;
-    height: 100px;
+    width: 150px;
+    height: 150px;
     background-position: center;
     border-radius: 50%;
 }

@@ -5,6 +5,7 @@ export var buildInfoPanel = (function(data, color) {
         return;
     }
     resetInfoPanel();
+    document.getElementById("cohortTAs").innerHTML = "";
     document.getElementById("infoPanel").style.backgroundColor = color;
     var imgUrl = `"https://gradeit.cs.washington.edu/uwcse/resources/${data.img}.jpg"`;
     var img = `<img src=${imgUrl} onerror="this.src='resources/error_pics/dubs.jpg';" >`
@@ -13,12 +14,19 @@ export var buildInfoPanel = (function(data, color) {
     document.getElementById("pic").innerHTML = img;
     document.getElementById("name").innerHTML = veteran + data.id;
     document.getElementsByTagName("h2")[0].innerHTML = `Started ${data.cohort}`;
+    document.getElementsByTagName("h2")[0].style.color = "#242323";
     if (data.num_142_quarters > 0) {
         document.getElementById("num142").innerHTML = `142 quarters: ${data.num_142_quarters}`;
     } else {
         document.getElementById("num142").innerHTML = "";
 
     }
+    document.getElementById("num142").style.color = "#242323";
+    document.getElementById("num143").style.color = "#242323";
+    document.getElementById("num143x").style.color = "#242323";
+    document.getElementById("num14x").style.color = "#242323";
+    document.getElementById("total").style.color = "#242323";
+
 
     if (data.num_143_quarters > 0) {
         document.getElementById("num143").innerHTML = `143 quarters: ${data.num_143_quarters}`;
@@ -36,7 +44,7 @@ export var buildInfoPanel = (function(data, color) {
 });
 
 export var resetInfoPanel = (function resetInfoPanel() {
-    document.getElementById("pic").innerHTML = "TA Family Tree";
+    document.getElementById("pic").innerHTML = "TA Family Tree Viz";
     document.getElementById("name").innerHTML = ""
     document.getElementsByTagName("h2")[0].innerHTML = "";
     document.getElementById("num142").innerHTML = "";
@@ -44,7 +52,11 @@ export var resetInfoPanel = (function resetInfoPanel() {
     document.getElementById("num143x").innerHTML = "";
     document.getElementById("num14x").innerHTML = "";
     document.getElementById("total").innerHTML = "";
-    document.getElementById("cohortTAs").innerHTML = "";
+    document.getElementById("cohortTAs").innerHTML = `<p style="color:#232424;">Welcome to the TA "family" tree!</p>
+    <p style="font-size:10pt;color:#232424;text-align: left;width:200px;padding-left: 50px;">This displays the hiring data and the 
+        "family" relationships between the TAs at the Univerisity of Washington starting from the year 2000.
+    </p>
+    <p><a href="https://www.youtube.com/watch?v=6x9Osruma38">Learn more about intro at UW </a></p>`;
 });
 
 export var displayCohort = (function (cohort, people) {

@@ -96,9 +96,9 @@ function resizeWindow() {
 
 // Arrow heads marker designs
 var defs = svg.append('defs');
-buildArrowHeads(defs);
+buildArrowHeads();
 
-function buildArrowHeads(def) {
+function buildArrowHeads() {
     function marker(id) {
         defs.append('marker')
             .attr("id", id)
