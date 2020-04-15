@@ -35,6 +35,11 @@ var link;
 
 // HACK: initially all nodes are hidden, except one
 // random year from 2011 to 2020
+filterSet.add("00");
+filterSet.add("01");
+filterSet.add("02");
+filterSet.add("03");
+filterSet.add("04");
 filterSet.add("05");
 filterSet.add("06");
 filterSet.add("07");
@@ -184,6 +189,8 @@ export function loadGraphFromJson(file) {
                 }
                 cohortCounts[coh] += 1;
             }
+            years.sort();
+            console.log(years);
             
             renderYearButtons();
         }

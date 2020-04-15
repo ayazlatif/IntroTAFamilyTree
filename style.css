@@ -100,9 +100,14 @@ circle:hover, button {
     }
 
     #reset, #separateQuarters {
-        width: 220px;
+        width: 210px;
         padding: 5px;
         margin: 0px;
+    }
+
+    #separateQuarters {
+        background-color: goldenrod;
+        font-family: 'Roboto';
     }
 
 
@@ -116,7 +121,7 @@ circle:hover, button {
     top: 100%;
     left: 0;
     right: 0;
-    width: 220px;
+    width: 210px;
 }
 .autocomplete-items div {
     padding: 10px;
@@ -172,12 +177,15 @@ h1, h2, h3 {
 #filter {
     /* display: none; */
     /* position: absolute; */
+    /* pos
     top: 0px;
-    right: 0px;
-    margin: 0px;
-    width: 220px;
-    height: 200px;
-    overflow: auto;
+    right: 0px; */
+    position: relative;
+    margin-left: 10px;
+    width: 230px;
+    /* height: 200px; */
+    /* float:rig */
+    /* overflow: auto; */
 }
 
 #filter h3, #search h3, #familyFilter h3 {
