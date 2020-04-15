@@ -31,7 +31,7 @@ export var buildInfoPanel = (function(data, color) {
     if (data.num_14x_quarters > 0) {
         document.getElementById("num14x").innerHTML = `14x quarters: ${data.num_14x_quarters}`;
     }
-    document.getElementById("total").innerHTML = `total: ${totalQuarters}`;
+    document.getElementById("total").innerHTML = `Quarters TA'd: ${totalQuarters}`;
     // document.getElementsByTagName("h3")[0].innerHTML = `Worked ${data.num_quarters} quarters`;
 });
 
@@ -69,6 +69,7 @@ export var displayCohort = (function (cohort, people) {
     document.getElementsByTagName("img")[0].style.background = "none";
     document.getElementById("name").innerHTML = `${cohort} Cohort`;
     document.getElementById("num142").innerHTML = `Avg # Quarters TA'd: ${avgQuarters.toFixed(2)}`;
+    document.getElementById("num143").innerHTML = `Cohort size: ${people.length}`
     document.getElementById("cohortTAs").innerHTML = lis;
 });
 

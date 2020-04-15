@@ -14,9 +14,17 @@ p {
     fill: red;
 }
 
-svg:hover {
-    cursor: move;
+ul {
+    list-style: none;
+    text-align: center;
+    margin-bottom: 10px;
+    padding: 0px;
+    color: #2d2d2d;
 }
+
+/* svg:hover {
+    cursor: move;
+} */
 
 circle:hover, button {
     cursor: pointer;
@@ -27,6 +35,7 @@ circle:hover, button {
     top: 0px;
     right: 0px;
     padding: 0px;
+    width: 220px;
 }
 
 .autocomplete {
@@ -47,6 +56,11 @@ circle:hover, button {
     background-color: red;
     /* border-style: groove; */
 
+}
+
+#infoPanel h3 {
+    margin : 0px;
+    padding: 0px;
 }
 
 #legend {
@@ -94,20 +108,30 @@ circle:hover, button {
         margin-right: 10px;
         margin-left: 0px;
         padding: 0px;
-        overflow: visible;
+        /* overflow: visible; */
         width: 75%;
         background-color: lightcyan;
     }
 
     #reset, #separateQuarters {
         width: 210px;
-        padding: 5px;
-        margin: 0px;
+        font-weight: bold;
+        text-align: center;
+        background-color: #d4d4d4;
+    }
+
+    #reset:hover, #separateQuarters:hover {
+        cursor: pointer;
+        background-color: #c0c0c0;
     }
 
     #separateQuarters {
-        background-color: goldenrod;
-        font-family: 'Roboto';
+        width : 210px;
+    }
+
+    #reset, #separateQuarters {
+        padding: 5px;
+        margin: 0px;
     }
 
 
@@ -121,7 +145,7 @@ circle:hover, button {
     top: 100%;
     left: 0;
     right: 0;
-    width: 210px;
+    width: 218px;
 }
 .autocomplete-items div {
     padding: 10px;
@@ -148,7 +172,7 @@ input {
 
 input[type=text] {
     background-color: #f1f1f1;
-    width: 200px;
+    width: 198px;
 }
 
 .nodes {
@@ -180,18 +204,22 @@ h1, h2, h3 {
     /* pos
     top: 0px;
     right: 0px; */
-    position: relative;
-    margin-left: 10px;
-    width: 230px;
+    /* position: relative; */
+    /* margin-left: 10px;
+    width: 230px; */
     /* height: 200px; */
     /* float:rig */
     /* overflow: auto; */
+    position: relative;
+    width: 230px;
 }
 
 #filter h3, #search h3, #familyFilter h3 {
     background-color: goldenrod;
-    padding: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
     margin: 0px;
+    width: 220px;
 }
 
 #searchOptions input {

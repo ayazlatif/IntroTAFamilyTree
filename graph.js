@@ -378,7 +378,8 @@ function renderGraph() {
             document.getElementById(year).click();
             return;
         }
-
+        var datum = d3.select(person).datum();
+        buildInfoPanel(datum, colorCohort(datum.cohort));
 
         focusNodes.add(name);
         getLineage(name).forEach((a) => lightNodes.add(a));
