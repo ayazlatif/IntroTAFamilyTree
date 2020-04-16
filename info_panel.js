@@ -44,8 +44,8 @@ export var buildInfoPanel = (function(data, color) {
 });
 
 export var resetInfoPanel = (function resetInfoPanel() {
-    document.getElementById("pic").innerHTML = "TA Family Tree Viz";
-    document.getElementById("name").innerHTML = ""
+    document.getElementById("pic").innerHTML = `<img style="width:300px; height:100px;border-radius: 10%;background: none;"  src="/resources/error_pics/no_cohort.svg"/>`;
+    document.getElementById("name").innerHTML = "TA Family Tree Viz"
     document.getElementsByTagName("h2")[0].innerHTML = "";
     document.getElementById("num142").innerHTML = "";
     document.getElementById("num143").innerHTML = "";
