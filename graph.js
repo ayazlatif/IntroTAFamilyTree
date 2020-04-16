@@ -8,8 +8,8 @@ import { NODE_SIZE,
         DURATION,
         Y_TEXT_SMALL,
         Y_TEXT_MEDIUM,
-        Y_TEXT_LARGE,
-        ATTRACTION_FORCE_TEXT } from './index.js';
+        Y_TEXT_LARGE, 
+    } from './index.js';
 import { Queue } from './Queue.js';
 import { autocomplete } from './autocomplete.js';
 
@@ -33,29 +33,16 @@ var node;
 var link;
 
 
-// HACK: initially all nodes are hidden, except one
-// random year from 2011 to 2020
-filterSet.add("00");
-filterSet.add("01");
-filterSet.add("02");
-filterSet.add("03");
-filterSet.add("04");
-filterSet.add("05");
-filterSet.add("06");
-filterSet.add("07");
-filterSet.add("08");
-filterSet.add("09");
-filterSet.add("10");
-filterSet.add("11");
-filterSet.add("12");
-filterSet.add("13");
-filterSet.add("14");
-filterSet.add("15");
-filterSet.add("16");
-filterSet.add("17");
-filterSet.add("18");
-filterSet.add("19");
-filterSet.add("20");
+// initiall all years in filter
+for (var i = 0; i <= 20; i++) {
+    var year = "" + i;
+    console.log(year);
+    if (year.length == 1) {
+        filterSet.add("0" + year);
+    } else {
+        filterSet.add(year);
+    }
+}
 
 var svg = d3.select("#viz");
 var graphContainer = svg.append("g").attr("id", "graph");
@@ -123,8 +110,8 @@ export function getNames() {
     return allData.nodes.map((el) => el.id);
 }
 
-export function loadGraphFromJson(file) {
-    d3.json(file).then(function(graph) {
+export function loadGraphFromJson(graph) {
+    // d3.json(file).then(function(graph) {
         allData = graph;
 
         simulation = d3.forceSimulation()
@@ -189,9 +176,8 @@ export function loadGraphFromJson(file) {
                 }
                 cohortCounts[coh] += 1;
             }
+
             years.sort();
-            console.log(years);
-            
             renderYearButtons();
         }
 
@@ -208,7 +194,7 @@ export function loadGraphFromJson(file) {
         }
 
         function filterYears(d) {
-            console.log(filterSet);
+
             if (filterSet.has(d)) {
                 filterSet.delete(d);
                 d3.select(this).style("opacity", 1);
@@ -221,7 +207,7 @@ export function loadGraphFromJson(file) {
                 .filter((d) => !filterSet.has(d.info_src.cohort.substring(0, 2)) &&
                         !filterSet.has(d.info_child.cohort.substring(0, 2))
                 );
-            console.log(filteredNodes.length);
+
             data = {nodes : filteredNodes, links : filteredLinks};
             renderGraph();
         }
@@ -248,14 +234,12 @@ export function loadGraphFromJson(file) {
 
             node.call(updateNode);
             link.call(updateLink);
+        // }
         }
-    });
     svg.call(zoom);
 }
 
 function renderGraph() {
-    // console.log("rendering");
-    // console.log(data.nodes.length);
     simulation.alpha(0.5);
     var ids = data.nodes.map((d) => d.id);
     var removeThese = Array.from(focusNodes).filter(function(id) {
@@ -350,7 +334,7 @@ function renderGraph() {
         if (separateQuarters) {
             adjust = QUARTERS.indexOf(quarter) - 1;
         }
-        console.log(adjust);
+
         var minYear = parseInt(Math.min(...data.nodes.map((d) => d.cohort.substring(0, 2))));
 
         return ((parseInt(d.cohort.substring(0, 2)) - minYear + 5) * 100) + adjust * 100;
@@ -428,11 +412,8 @@ function addLightNodes() {
 
 function searchCohort() {
     let cohort = document.getElementById("cohortList").value;
-    console.log("search");
-    console.log(cohort);
-    console.log(data.nodes.map((d) => d.cohort));
     var people = data.nodes.filter((d) => d.cohort === cohort);
-    console.log(people);
+
     if (people.length == 0) {
         people = allData.nodes.filter((d) => d.cohort === cohort);
         people.forEach((a) => focusNodes.add(a.id));
@@ -451,8 +432,6 @@ function searchCohort() {
 
 function findData(id) {
     var result = data.nodes.filter((d) => d.id === id);
-    // console.log(result);
-    console.log(data.nodes.length);
     return result ? result[0] : undefined;
 }
 
@@ -468,8 +447,6 @@ function searchBfs(start, childrenFn) {
         }
         visited.add(next);
         count += 1;
-        console.log("visited");
-        console.log(next);
         for (var i = 0; i < childrenFn(next).length; i++) {
             var child = childrenFn(next)[i];
             if (!visited.has(child)) {
@@ -482,32 +459,24 @@ function searchBfs(start, childrenFn) {
 
 function getLineage(startId) {
     var familyFilter = getCheckedRadioValue("familySelection");
-    console.log(startId);
     var lineage = new Set();
     if (familyFilter === "single") {
         lineage.add(startId);
     }
 
     if (familyFilter === "children" || familyFilter === "all") {
-        console.log("kid");
-        console.log(data);
         var children = searchBfs(findData(startId), function(elm) {
-            console.log(elm);
             if (!elm) {
-                console.log("o shit");
                 return [];
             }
-            console.log(elm.children.map((d) => findData(d.id)).filter((d) => d));
             return elm.children.map((d) => findData(d.id)).filter((d) => d);
         });
-        console.log(children);
         if (children) {
             children.forEach(function(a) { return lineage.add(a.id); });
         }
     }
 
     if (familyFilter === "parents" || familyFilter === "all") {
-        console.log("parental");
         var parents = searchBfs(findData(startId), function(elm) {
             if (!elm) {
                 return [];
@@ -515,19 +484,12 @@ function getLineage(startId) {
             var result = [elm.parent142, elm.parent143, elm.parent143x];
             return result.filter((d) => d).map((d) => findData(d)).filter((d) => d);
         });
-        console.log(parents);
         parents.forEach(a => lineage.add(a.id));
     }
     return lineage;
 }
 
 function unfocus() {
-    // if (focusNodes.size > 0) {
-    //     simulation.force("charge", d3.forceManyBody().strength(ATTRACTION_FORCE_TEXT));
-    // } else {
-    //     simulation.forEach("charge", d3.forceManyBody().strength(ATTRACTION_FORCE));
-    // }
-    // // simulation.alphaTarget(0.05).restart();
     var nodeSize = (d) => focusNodes.has(d.id) ? LARGE_NODE_SIZE : NODE_SIZE;
     var opacity = (d) => lightNodes.has(d.id) || lightNodes.size == 0 ? 1 : LIGHT_OPACITY;
     var yText = (d) => focusNodes.has(d.id) ? Y_TEXT_LARGE : Y_TEXT_SMALL;
@@ -541,14 +503,11 @@ function unfocus() {
 }
 
 function focus(person) {
-    // simulation.force("charge", d3.forceManyBody().strength(ATTRACTION_FORCE_TEXT));
-    // simulation.alphaTarget(0.05).restart();
 
     buildInfoPanel(person, colorCohort(person.cohort));
-    var id = person.id;//d3.select(d).datum().id;
-
+    var id = person.id;
     var lineage = getLineage(person.id);
-    console.log(lineage);
+
     var nodeSize = function(d) {
         if (focusNodes.has(d.id)) {
             return LARGE_NODE_SIZE;
@@ -587,11 +546,6 @@ function dragended(d) {
     if (!d3.event.active) simulation.alphaTarget(0.05);
     d.fx = null;
     d.fy = null;
-}
-
-function familyFilterChange() {
-    
-
 }
 
 function animateNode(selection, nodeSize, opacity, yText, display) {

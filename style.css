@@ -10,10 +10,6 @@ p {
     text-align: center;
 }
 
-.tooltip {
-    fill: red;
-}
-
 ul {
     list-style: none;
     text-align: center;
@@ -21,10 +17,6 @@ ul {
     padding: 0px;
     color: #2d2d2d;
 }
-
-/* svg:hover {
-    cursor: move;
-} */
 
 circle:hover, button {
     cursor: pointer;
@@ -47,15 +39,15 @@ circle:hover, button {
     /* hack too lazy to delete buttons so hid them :P */
     display: none;
 }
+#viz, #legend, #controls {
+    background-color: lightcyan;
+}
 
 #viz {
-    background-color: lightcyan;
     margin: 0px;
 }
 #infoPanel {
     background-color: red;
-    /* border-style: groove; */
-
 }
 
 #infoPanel h3 {
@@ -63,22 +55,6 @@ circle:hover, button {
     padding: 0px;
 }
 
-#legend {
-    background-color: lightcyan;
-}
-
-#viz {
-    /* border-style: groove; */
-    /* border-radius: 10%; */
-}
-
-#legend {
-    /* border-radius: 20%; */
-}
-
-#infoPanel {
-    /* border-radius: 10%; */
-}
 #infoPanel, #legend {
     position: relative;
     float: left;
@@ -87,53 +63,50 @@ circle:hover, button {
     overflow: auto;
 }
 
-    #viz {
-        position: relative;
-        float: right;
-        width: 100%;
-    }
+#viz {
+    position: relative;
+    float: right;
+    width: 100%;
+}
 
-    #infoPanel, #legend {
-        width: 17%;
-    }
+#infoPanel, #legend {
+    width: 17%;
+}
 
-    #legend {
-        text-align: center;
-    }
+#legend {
+    text-align: center;
+}
 
-    #controls {
-        position: relative;
-        float: right;
-        margin-top: 10px;
-        margin-right: 10px;
-        margin-left: 0px;
-        padding: 0px;
-        /* overflow: visible; */
-        width: 75%;
-        background-color: lightcyan;
-    }
+#controls {
+    position: relative;
+    float: right;
+    margin-top: 10px;
+    margin-right: 10px;
+    margin-left: 0px;
+    padding: 0px;
+    width: 75%;
+}
 
-    #reset, #separateQuarters {
-        width: 210px;
-        font-weight: bold;
-        text-align: center;
-        background-color: #d4d4d4;
-    }
+#reset, #separateQuarters {
+    width: 210px;
+    font-weight: bold;
+    text-align: center;
+    background-color: #d4d4d4;
+}
 
-    #reset:hover, #separateQuarters:hover {
-        cursor: pointer;
-        background-color: #c0c0c0;
-    }
+#reset:hover, #separateQuarters:hover {
+    cursor: pointer;
+    background-color: #c0c0c0;
+}
 
-    #separateQuarters {
-        width : 210px;
-    }
+#separateQuarters {
+    width : 210px;
+}
 
-    #reset, #separateQuarters {
-        padding: 5px;
-        margin: 0px;
-    }
-
+#reset, #separateQuarters {
+    padding: 5px;
+    margin: 0px;
+}
 
 .autocomplete-items {
     position: absolute;
@@ -147,6 +120,7 @@ circle:hover, button {
     right: 0;
     width: 218px;
 }
+
 .autocomplete-items div {
     padding: 10px;
     cursor: pointer;
@@ -199,17 +173,6 @@ h1, h2, h3 {
 }
 
 #filter {
-    /* display: none; */
-    /* position: absolute; */
-    /* pos
-    top: 0px;
-    right: 0px; */
-    /* position: relative; */
-    /* margin-left: 10px;
-    width: 230px; */
-    /* height: 200px; */
-    /* float:rig */
-    /* overflow: auto; */
     position: relative;
     width: 230px;
 }
@@ -230,16 +193,11 @@ h1, h2, h3 {
 .radio {
     display: block;
     padding-left: 50px;
-    /* background-color: lightskyblue; */
 }
 
 .radio label:hover, .radio input:hover {
     cursor: pointer;
 }
-
-/* #filter button:hover {
-    opacity: 0.5;
-} */
 
 #filter h3, #familyFilter {
     margin-top: 20px;

@@ -48,15 +48,6 @@ with open(sys.argv[1], 'r') as f:
                 "cohort" :  "05au",                
                 "img" : parent.replace(" ", "_").lower(),
                 "children" : [] }
-            # print("hmm")
-            # exit(0)
-            # tas[parent] = { "parent142" : "",
-            #             "parent143" : "",
-            #             "parent143x" : "",
-            #             "quarter" : random.randint(0, 3),
-            #             "year" : random.randint(1998, 2020),
-            #             "img" : parent.replace(" ", "_").lower(),
-            #             "children" : [] }
         if parent != "":
             links.append({"source" : parent, "target" : child, "type": relation, "info_src": tas[parent], "info_child" :tas[child]})
             tas[parent]["children"].append(tas[child])
