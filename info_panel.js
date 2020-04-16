@@ -44,7 +44,7 @@ export var buildInfoPanel = (function(data, color) {
 });
 
 export var resetInfoPanel = (function resetInfoPanel() {
-    document.getElementById("pic").innerHTML = `<img style="width:300px; height:100px;border-radius: 10%;background: none;"  src="resources/error_pics/no_cohort.svg"/>`;
+    document.getElementById("pic").innerHTML = `<img style="width:100%; height:100px;border-radius: 10%;background: none;"  src="resources/error_pics/no_cohort.svg"/>`;
     document.getElementById("name").innerHTML = "TA Family Tree Viz"
     document.getElementsByTagName("h2")[0].innerHTML = "";
     document.getElementById("num142").innerHTML = "";
@@ -53,7 +53,7 @@ export var resetInfoPanel = (function resetInfoPanel() {
     document.getElementById("num14x").innerHTML = "";
     document.getElementById("total").innerHTML = "";
     document.getElementById("cohortTAs").innerHTML = `<p style="color:#232424;">Welcome to the TA "family" tree!</p>
-    <p style="font-size:10pt;color:#232424;text-align: left;width:200px;padding-left: 50px;">This displays the hiring data and the 
+    <p style="font-size:10pt;color:#232424;text-align: left;width:200px;padding-left: 5%;">This displays the hiring data and the 
         "family" relationships between the TAs at the Univerisity of Washington starting from the year 2000.
     </p>
     <p><a href="https://www.youtube.com/watch?v=6x9Osruma38">Learn more about intro at UW </a></p>`;
@@ -76,8 +76,8 @@ export var displayCohort = (function (cohort, people) {
     var pic = document.getElementById("pic");
     pic.innerHTML = img;
     document.getElementsByTagName("img")[0].style.borderRadius = "10%";
-    document.getElementsByTagName("img")[0].style.width = "300px";
-    document.getElementsByTagName("img")[0].style.height = COHORT_IMGS.has(cohort) ? "200px" : "100px";
+    document.getElementsByTagName("img")[0].style.width = "80%";
+    document.getElementsByTagName("img")[0].style.height = "100%";
     document.getElementsByTagName("img")[0].style.background = "none";
     document.getElementById("name").innerHTML = `${cohort} Cohort`;
     document.getElementById("num142").innerHTML = `Avg # Quarters TA'd: ${avgQuarters.toFixed(2)}`;
