@@ -22,6 +22,7 @@ window.onload = function () {
 
             function addEdge(parent, child, relation) {
                 if ((!(parent in tas)) && parent !== "") {
+                    taNames.push(parent);
                     tas[parent] = { "id" : parent,
                         "parent142" : "",
                         "parent143" : "",
