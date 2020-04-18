@@ -5,13 +5,12 @@ export const MEDIUM_NODE_SIZE = 25;
 export const LARGE_NODE_SIZE = 35;
 export const LIGHT_OPACITY = 0.2;
 export const ATTRACTION_FORCE = -2000;
-export var START_YEAR = 0; // 2000
-export var END_YEAR = 20; // 2020
 export const DURATION = 500;
 export const LINK_STRENGTH = 0;
 export const Y_TEXT_SMALL = 3 * NODE_SIZE;
 export const Y_TEXT_MEDIUM = 2 * MEDIUM_NODE_SIZE;
 export const Y_TEXT_LARGE = 1.8 * LARGE_NODE_SIZE;
+export const YEAR_GAP = 100;
 
 const DATA = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQh1nE1K_4KeNgcCpM5Y0OFEG5hyweGzNP4d0SZBu7VgkZeNjeESvWWAK_CMIlDXqiybLjZkTw371I0/pub?gid=0&single=true&output=csv";
 
