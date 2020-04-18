@@ -289,7 +289,7 @@ function renderGraph() {
             nodeSize = MEDIUM_NODE_SIZE;
             yText = Y_TEXT_MEDIUM;
             focusNodes.delete(datum.id);
-            getLineageSet(getLineage(datum.id)).forEach(function(a) {
+            getLineageSet(getLineage(datum.id, data)).forEach(function(a) {
                 if (focusNodes.has(a)) {
                     return;
                 }
@@ -302,7 +302,6 @@ function renderGraph() {
         }
 
         animateNode(d3.select(this), nodeSize, opacity, yText, display);
-
         // handle case when focus and light node select/deselct overlap
         addLightNodes();
     }).call(
@@ -310,7 +309,7 @@ function renderGraph() {
             .on("start", dragstarted)
             .on("drag", dragged)
             .on("end", dragended)
-    );;
+    );
 
     simulation.nodes(data.nodes);
     simulation.force("link").links(data.links);
@@ -331,7 +330,8 @@ function renderGraph() {
 
     document.getElementById("searchBtn").onclick = function() {
         var name = document.getElementById("myInput").value;
-
+        var personDatum = findData(name, allData);
+        buildInfoPanel(personDatum, colorCohort(personDatum.cohort), getLineage(name, allData));
         var person;
         d3.select(".nodes").selectAll("g").each(function(d) {
             if (d.id === name) {
@@ -343,16 +343,15 @@ function renderGraph() {
             var person = allData.nodes.filter((d) => d.id === name)[0];
             var cohort = person.cohort;
             var year = cohort.substring(0, 2);
-            buildInfoPanel(person, colorCohort(cohort));
             focusNodes.add(name);
             document.getElementById(year).click();
             return;
         }
-        var datum = d3.select(person).datum();
-        buildInfoPanel(datum, colorCohort(datum.cohort));
+        // var datum = d3.select(person).datum();
+        // buildInfoPanel(datum, colorCohort(datum.cohort), getLineage(name, allData));
 
         focusNodes.add(name);
-        getLineageSet(getLineage(name)).forEach((a) => lightNodes.add(a));
+        getLineageSet(getLineage(name, data)).forEach((a) => lightNodes.add(a));
 
         d3.select(person).dispatch("mouseout"); // focus on this
     };
@@ -392,7 +391,7 @@ function renderGraph() {
 }
 
 function addLightNodes() {
-    focusNodes.forEach((id) => getLineageSet(getLineage(id))
+    focusNodes.forEach((id) => getLineageSet(getLineage(id, data))
         .forEach((d) => lightNodes.add(d)));
 }
 
@@ -416,8 +415,8 @@ function searchCohort() {
     displayCohort(cohort, people);
 }
 
-function findData(id) {
-    var result = data.nodes.filter((d) => d.id === id);
+function findData(id, targetData) {
+    var result = targetData.nodes.filter((d) => d.id === id);
     return result ? result[0] : undefined;
 }
 
@@ -443,7 +442,10 @@ function searchBfs(start, childrenFn) {
     return visited;
 }
 
-function getLineage(startId) {
+// startId for the search
+// targetData for where you want to find lineage
+// give it data for filtering and allData to get full lineage
+function getLineage(startId, targetData) {
     var familyFilter = getCheckedRadioValue("familySelection");
     var lineage = new Set();
     if (familyFilter === "single") {
@@ -452,21 +454,21 @@ function getLineage(startId) {
     var children = []
     var parents = []
     if (familyFilter === "children" || familyFilter === "all") {
-        children = searchBfs(findData(startId), function(elm) {
+        children = searchBfs(findData(startId, targetData), function(elm) {
             if (!elm) {
                 return [];
             }
-            return elm.children.map((d) => findData(d.id)).filter((d) => d);
+            return elm.children.map((d) => findData(d.id, targetData)).filter((d) => d);
         });
     }
 
     if (familyFilter === "parents" || familyFilter === "all") {
-        parents = searchBfs(findData(startId), function(elm) {
+        parents = searchBfs(findData(startId, targetData), function(elm) {
             if (!elm) {
                 return [];
             }
             var result = [elm.parent142, elm.parent143, elm.parent143x];
-            return result.filter((d) => d).map((d) => findData(d)).filter((d) => d);
+            return result.filter((d) => d).map((d) => findData(d, targetData)).filter((d) => d);
         });
     }
     return {children : children, parents : parents};
@@ -494,9 +496,9 @@ function getLineageSet(parentsAndChildren) {
 
 function focus(person) {
 
-    buildInfoPanel(person, colorCohort(person.cohort));
+    buildInfoPanel(person, colorCohort(person.cohort), getLineage(person.id, allData));
     var id = person.id;
-    var parentsAndChildren = getLineage(person.id);
+    var parentsAndChildren = getLineage(person.id, data);
     var lineage = getLineageSet(parentsAndChildren);
 
     var nodeSize = function(d) {

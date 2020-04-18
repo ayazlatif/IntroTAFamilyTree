@@ -1,9 +1,6 @@
 let COHORT_IMGS = new Set(["15sp", "16sp", "17au", "18au", "18sp", "18wi", "19au", "19sp", "19wi"])
 
-export var buildInfoPanel = (function(data, color) {
-    if (!data.id) {
-        return;
-    }
+export var buildInfoPanel = (function(data, color, lineage) {
     resetInfoPanel();
     document.getElementById("cohortTAs").innerHTML = "";
     document.getElementById("infoPanel").style.backgroundColor = color;
@@ -40,10 +37,32 @@ export var buildInfoPanel = (function(data, color) {
         document.getElementById("num14x").innerHTML = `14x quarters: ${data.num_14x_quarters}`;
     }
     document.getElementById("total").innerHTML = `Quarters TA'd: ${totalQuarters}`;
-    // document.getElementsByTagName("h3")[0].innerHTML = `Worked ${data.num_quarters} quarters`;
+
+    var countInfo = document.createElement("div");
+    countInfo.style.margin = "0px";
+    countInfo.style.marginTop = "10px";
+    countInfo.id = "countInfo";
+    document.getElementById("infoPanel").appendChild(countInfo);
+
+    function addCount(count, message) {
+        if (count > 0) {
+            var ancestors = document.createElement("h3");
+            ancestors.innerHTML = `${count} ${message}`;
+            countInfo.appendChild(ancestors);
+            ancestors.style.color = "#242323";
+            ancestors.style.margin = "0px";
+        }
+    }
+
+    addCount(lineage.parents.size - 1, lineage.parents.size - 1 == 1 ? "ancestor" : "ancestors");
+    addCount(lineage.children.size - 1, lineage.children.size - 1 == 1 ? "descendant" : "descendants");
+    addCount(data.children.length, data.children.length == 1 ? "child" : "children");
 });
 
 export var resetInfoPanel = (function resetInfoPanel() {
+    if (document.contains(document.getElementById("countInfo"))) {
+        document.getElementById("countInfo").remove();
+    }
     document.getElementById("pic").innerHTML = `<img style="width:100%; height:100px;border-radius: 10%;background: none;"  src="resources/error_pics/no_cohort.svg"/>`;
     document.getElementById("name").innerHTML = "TA Family Tree Viz"
     document.getElementsByTagName("h2")[0].innerHTML = "";
