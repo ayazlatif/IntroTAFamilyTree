@@ -9,7 +9,8 @@ import { NODE_SIZE,
         Y_TEXT_SMALL,
         Y_TEXT_MEDIUM,
         Y_TEXT_LARGE,
-        YEAR_GAP
+        YEAR_GAP,
+        QUARTER_GAP
     } from './index.js';
 import { Queue } from './Queue.js';
 import { autocomplete } from './autocomplete.js';
@@ -86,11 +87,6 @@ function buildArrowHeads() {
     marker("arrowhead-parent142");
     marker("arrowhead-parent143");
     marker("arrowhead-parent143x");
-}
-
-
-function getNames() {
-    return allData.nodes.map((el) => el.id);
 }
 
 export function loadGraphFromJson(graph) {
@@ -299,7 +295,7 @@ function renderGraph() {
         height = window.innerHeight - HEIGHT_ADJUST;
         var quarter = d.cohort.substring(2);
         var minYear = parseInt(Math.min(...data.nodes.map((d) => d.cohort.substring(0, 2))));
-        var space = separateQuarters ? 300 : 200;
+        var space = separateQuarters ? QUARTER_GAP : YEAR_GAP;
 
         var forceY = height / 2 + (((parseInt(d.cohort.substring(0, 2)) - minYear) * space));
         if (separateQuarters) {
@@ -332,8 +328,6 @@ function renderGraph() {
             document.getElementById(year).click();
             return;
         }
-        // var datum = d3.select(person).datum();
-        // buildInfoPanel(datum, colorCohort(datum.cohort), getLineage(name, allData));
 
         focusNodes.add(name);
         getLineageSet(getLineage(name, data)).forEach((a) => lightNodes.add(a));
@@ -342,7 +336,7 @@ function renderGraph() {
     };
 
     document.getElementById("reset").onclick = resetSearch;
-    autocomplete(document.getElementById("myInput"), getNames());
+    autocomplete(document.getElementById("myInput"), allData.nodes.map((el) => el.id));
 
     function resetSearch() {
         focusNodes.clear();
@@ -411,12 +405,7 @@ function searchBfs(start, childrenFn) {
             continue;
         }
         visited.add(next);
-        for (var i = 0; i < childrenFn(next).length; i++) {
-            var child = childrenFn(next)[i];
-            if (!visited.has(child)) {
-                explore.add(child);
-            }
-        }
+        childrenFn(next).forEach((child) => { if (!visited.has(child)) explore.add(child) });
     }
     return visited;
 }
@@ -496,8 +485,7 @@ function focus(person) {
 
     animateNode(node, nodeSize, opacity, yText, display);
 
-    var linkOpacity = (d) =>
-            lineage.has(d.source.id) && lineage.has(d.target.id) ? 1 : LIGHT_OPACITY;
+    var linkOpacity = (d) => lineage.has(d.source.id) && lineage.has(d.target.id) ? 1 : LIGHT_OPACITY;
     var strokeWidth = (d) => lineage.has(d.source.id) && lineage.has(d.target.id) ? "2px" : "1px";
     animateLinks(linkOpacity, strokeWidth);
 }

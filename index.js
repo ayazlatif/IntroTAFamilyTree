@@ -10,7 +10,8 @@ export const LINK_STRENGTH = 0;
 export const Y_TEXT_SMALL = 3 * NODE_SIZE;
 export const Y_TEXT_MEDIUM = 2 * MEDIUM_NODE_SIZE;
 export const Y_TEXT_LARGE = 1.8 * LARGE_NODE_SIZE;
-export const YEAR_GAP = 100;
+export const YEAR_GAP = 200;
+export const QUARTER_GAP = 500;
 
 const DATA = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQh1nE1K_4KeNgcCpM5Y0OFEG5hyweGzNP4d0SZBu7VgkZeNjeESvWWAK_CMIlDXqiybLjZkTw371I0/pub?gid=0&single=true&output=csv";
 
