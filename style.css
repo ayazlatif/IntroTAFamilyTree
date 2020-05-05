@@ -39,7 +39,7 @@ circle:hover, button {
     /* hack too lazy to delete buttons so hid them :P */
     display: none;
 }
-#viz, #legend, #controls {
+#viz, #legend, #vizContainer {
     background-color: lightcyan;
 }
 
@@ -77,7 +77,7 @@ circle:hover, button {
     text-align: center;
 }
 
-#controls {
+#vizContainer {
     position: relative;
     float: right;
     margin-top: 10px;

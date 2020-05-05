@@ -13,12 +13,10 @@ import { NODE_SIZE,
 import { Queue } from './Queue.js';
 import { autocomplete } from './autocomplete.js';
 
-const QUARTERS = ['sp', 'wi', 'su', 'au'];
-
-
+const QUARTERS = ['wi', 'sp', 'su', 'au'];
 
 var separateQuarters = false;
-var width = document.getElementById("controls").clientWidth;
+var width = document.getElementById("vizContainer").clientWidth;
 var height = window.innerHeight - HEIGHT_ADJUST;
 var HEIGHT_ADJUST = 50;
 var color = d3.scaleOrdinal(d3.schemeCategory10);
@@ -32,44 +30,28 @@ var simulation;
 var node;
 var link;
 
-
-// initiall all years in filter
-for (var i = 0; i <= 20; i++) {
-    var year = "" + i;
-    console.log(year);
-    if (year.length == 1) {
-        filterSet.add("0" + year);
-    } else {
-        filterSet.add(year);
-    }
-}
-
 var svg = d3.select("#viz");
 var graphContainer = svg.append("g").attr("id", "graph");
 var linkData = graphContainer.append("g").attr("class", "links");
 var nodeData = graphContainer.append("g").attr("class", "nodes");
 
 document.getElementById("separateQuarters").onclick = function() {
-    if (separateQuarters) {
-        this.innerHTML = "Separate Quarters"
-    } else {
-        this.innerHTML = "Collapse Quarters"
-    }
+    this.innerHTML = `${separateQuarters ? "Separate" : "Collapse"} Quarters`;
     separateQuarters = !separateQuarters;
     renderGraph();
 }
 
 // sets up zoom
 var zoom = d3.zoom()
-.on("zoom", function() {
-    var b = d3.select("#graph").node().getBBox();
-    var x0 = b.x;
-    var x1 = b.x + b.width;
-    var t = d3.event.transform;
-    if (t.invertX(0) > x0) t.x = -x0 * t.k;
-    else if (t.invertX(width) < x1) t.x = width - x1 * t.k;
-    graphContainer.attr("transform", t);
-});
+    .on("zoom", function() {
+        var b = d3.select("#graph").node().getBBox();
+        var x0 = b.x;
+        var x1 = b.x + b.width;
+        var t = d3.event.transform;
+        if (t.invertX(0) > x0) t.x = -x0 * t.k;
+        else if (t.invertX(width) < x1) t.x = width - x1 * t.k;
+        graphContainer.attr("transform", t);
+    });
 
 zoom.scaleExtent([.1, 1]);
 
@@ -111,132 +93,117 @@ export function getNames() {
 }
 
 export function loadGraphFromJson(graph) {
-    // d3.json(file).then(function(graph) {
-        allData = graph;
+    allData = graph;
 
-        simulation = d3.forceSimulation()
-            .force("link", d3.forceLink().id((d) => d.id)
-                .distance(25).strength(LINK_STRENGTH))
-            .force("charge", d3.forceManyBody().strength(ATTRACTION_FORCE))
-            .force("x", d3.forceX(function(d) { return width / 2; }).strength(1))
-            .on("tick", ticked);
-        
-        setUpYears(allData);
-        setUpCohorts(allData);
-        document.getElementById(Math.floor(Math.random() * 10) + 11).click();
+    simulation = d3.forceSimulation()
+        .force("link", d3.forceLink().id((d) => d.id)
+            .distance(25).strength(LINK_STRENGTH))
+        .force("charge", d3.forceManyBody().strength(ATTRACTION_FORCE))
+        .force("x", d3.forceX(function(d) { return width / 2; }).strength(1))
+        .on("tick", ticked);
+    
+    var cohorts = [...new Set(graph.nodes.map((d) => d.cohort))];
+    autocomplete(document.getElementById("cohortList"), cohorts);
+    setUpYears(cohorts);
 
-        resizeWindow();
+    // Randomly show a year
+    document.getElementById(Math.floor(Math.random() * 10) + 11).click();
 
-        function setUpYears(graph) {
-            function renderYearButtons() {
-                var button = d3.select("#filter")
-                .selectAll("button")
-                .data(years)
-                .enter();
-
-                button.append("button")
-                    .style("background-color", (d) => colorCohort(maxCohortCountInYear(cohortCounts, d)))
-                    .style("opacity", 0.3)
-                    .attr("type", "button")
-                    .attr("id", (d) => d)
-                    .text(function(d) { return "20" + d; })
-                    .on("click", filterYears)
-                    .on("mouseover", function() {
-                        d3.select(this).style("opacity", "0.5");
-                    })
-                    .on("mouseout", function() {
-                        d3.select(this).style("opacity", (d) => filterSet.has(d) ? 0.3 : 1);
-                    });
-            }
-
-            function maxCohortCountInYear(cohortCounts, year) {
-                var maxQuarter = '';
-                var max = -Infinity;
-                QUARTERS.forEach(function(elm) {
-                    elm = `${year}${elm}`;
-                    var currentCount = cohortCounts[elm];
-                    if (cohortCounts[elm] > max) {
-                        max = currentCount;
-                        maxQuarter = elm;
-                    }
-                })
-                return maxQuarter;
-            }
-
-            var years = [];
-            var cohortCounts = {};
-            for (var i = 0; i < graph.nodes.length; i++) {
-                var year = graph.nodes[i].cohort.substring(0, 2);
-                var coh = graph.nodes[i].cohort;
-                if (!years.includes(year)) {
-                    years.push(year);
-                }
-                if (!(coh in cohortCounts)) {
-                    cohortCounts[coh] = 0;
-                }
-                cohortCounts[coh] += 1;
-            }
-
-            years.sort();
-            renderYearButtons();
-        }
-
-        function setUpCohorts(graph) {
-            var cohorts = [];
-
-            for (var i = 0; i < graph.nodes.length; i++) {
-                var coh = graph.nodes[i].cohort;
-                if (!cohorts.includes(coh)) {
-                    cohorts.push(coh);
-                }
-            }
-            autocomplete(document.getElementById("cohortList"), cohorts);
-        }
-
-        function filterYears(d) {
-
-            if (filterSet.has(d)) {
-                filterSet.delete(d);
-                d3.select(this).style("opacity", 1);
-            } else {
-                filterSet.add(d);
-                d3.select(this).style("opacity", 0.3);
-            }
-            var filteredNodes = allData.nodes.filter((d) => !filterSet.has(d.cohort.substring(0, 2)));
-            var filteredLinks = allData.links
-                .filter((d) => !filterSet.has(d.info_src.cohort.substring(0, 2)) &&
-                        !filterSet.has(d.info_child.cohort.substring(0, 2))
-                );
-
-            data = {nodes : filteredNodes, links : filteredLinks};
-            renderGraph();
-        }
-
-        // allows for movement of nodes and links
-        function ticked() {
-            function updateLink(link) {
-                link.attr("x1", function(d) { return fixNaN(d.source.x); })
-                    .attr("y1", function(d) { return fixNaN(d.source.y); })
-                    .attr("x2", function(d) { return fixNaN(d.target.x); })
-                    .attr("y2", function(d) { return fixNaN(d.target.y); });
-            }
-
-            // hack for NaN when updating tick
-            function fixNaN(n) {
-                return isFinite(n) ? n : 0;
-            }
-
-            function updateNode(selection) {
-                selection.attr("transform", function(d) {
-                    return "translate(" + fixNaN(d.x) + "," + fixNaN(d.y) + ")";
-                });
-            }
-
-            node.call(updateNode);
-            link.call(updateLink);
-        // }
-        }
+    resizeWindow();
     svg.call(zoom);
+
+    function setUpYears(cohorts) {
+        function renderYearButtons() {
+            var button = d3.select("#filter")
+            .selectAll("button")
+            .data(years)
+            .enter();
+
+            button.append("button")
+                .style("background-color", (d) => colorCohort(maxCohortCountInYear(cohortCounts, d)))
+                .style("opacity", 0.3)
+                .attr("type", "button")
+                .attr("id", (d) => d)
+                .text(function(d) { return "20" + d; })
+                .on("click", filterYears)
+                .on("mouseover", function() {
+                    d3.select(this).style("opacity", "0.5");
+                })
+                .on("mouseout", function() {
+                    d3.select(this).style("opacity", (d) => filterSet.has(d) ? 0.3 : 1);
+                });
+        }
+
+        function maxCohortCountInYear(cohortCounts, year) {
+            var maxQuarter = '';
+            var max = -Infinity;
+            QUARTERS.forEach(function(elm) {
+                elm = `${year}${elm}`;
+                var currentCount = cohortCounts[elm];
+                if (cohortCounts[elm] > max) {
+                    max = currentCount;
+                    maxQuarter = elm;
+                }
+            })
+            return maxQuarter;
+        }
+
+        var years = [...new Set(cohorts.map((d) => d.substring(0, 2)))];
+        var cohortCounts = {};
+        cohorts.forEach(function(coh) {
+            if (!(coh in cohortCounts)) {
+                cohortCounts[coh] = 0;
+            }
+            cohortCounts[coh] += 1;
+        });
+
+        years.sort();
+        years.forEach((y) => filterSet.add(y));
+        renderYearButtons();
+    }
+
+    function filterYears(d) {
+
+        if (filterSet.has(d)) {
+            filterSet.delete(d);
+            d3.select(this).style("opacity", 1);
+        } else {
+            filterSet.add(d);
+            d3.select(this).style("opacity", 0.3);
+        }
+        var filteredNodes = allData.nodes.filter((d) => !filterSet.has(d.cohort.substring(0, 2)));
+        var filteredLinks = allData.links
+            .filter((d) => !filterSet.has(d.info_src.cohort.substring(0, 2)) &&
+                    !filterSet.has(d.info_child.cohort.substring(0, 2))
+            );
+
+        data = {nodes : filteredNodes, links : filteredLinks};
+        renderGraph();
+    }
+
+    // allows for movement of nodes and links
+    function ticked() {
+        function updateLink(link) {
+            link.attr("x1", function(d) { return fixNaN(d.source.x); })
+                .attr("y1", function(d) { return fixNaN(d.source.y); })
+                .attr("x2", function(d) { return fixNaN(d.target.x); })
+                .attr("y2", function(d) { return fixNaN(d.target.y); });
+        }
+
+        // hack for NaN when updating tick
+        function fixNaN(n) {
+            return isFinite(n) ? n : 0;
+        }
+
+        function updateNode(selection) {
+            selection.attr("transform", function(d) {
+                return "translate(" + fixNaN(d.x) + "," + fixNaN(d.y) + ")";
+            });
+        }
+
+        node.call(updateNode);
+        link.call(updateLink);
+    }
 }
 
 function renderGraph() {
@@ -329,15 +296,18 @@ function renderGraph() {
     simulation.nodes(data.nodes);
     simulation.force("link").links(data.links);
     simulation.force("y", d3.forceY(function (d) { 
+        height = window.innerHeight - HEIGHT_ADJUST;
         var quarter = d.cohort.substring(2);
-        var adjust = 0;
-        if (separateQuarters) {
-            adjust = QUARTERS.indexOf(quarter) - 1;
-        }
-
         var minYear = parseInt(Math.min(...data.nodes.map((d) => d.cohort.substring(0, 2))));
+        var space = separateQuarters ? 300 : 200;
 
-        return ((parseInt(d.cohort.substring(0, 2)) - minYear + 5) * 100) + adjust * 100;
+        var forceY = height / 2 + (((parseInt(d.cohort.substring(0, 2)) - minYear) * space));
+        if (separateQuarters) {
+            var adjust = QUARTERS.indexOf(quarter) + 1;
+            forceY -= (space / adjust);
+        }
+        return forceY;
+
     }).strength(1));
 
     simulation.alphaTarget(0.05).restart();
@@ -385,21 +355,17 @@ function renderGraph() {
 
     document.getElementById("cohortSearchBtn").onclick = searchCohort;
 
-
-
     setOnClickFamilyFilter();
 
-
     function setOnClickFamilyFilter() { 
-        var elements = document.getElementsByClassName("radio");
-
-        for (var i=0, len=elements.length; i<len; ++i) {
-            elements[i].onclick = function() {
+        var elements = [...document.getElementsByClassName("radio")]
+        elements.forEach(
+            (elm) => elm.onclick = function() {
                 lightNodes.clear();
                 addLightNodes();
                 unfocus();
-            };
-        }
+            }
+        );
     }
 
 
@@ -439,14 +405,12 @@ function searchBfs(start, childrenFn) {
     var explore = new Queue();
     explore.add(start);
     var visited = new Set();
-    var count = 0;
     while (!explore.isEmpty()) {
         var next = explore.remove()
         if (visited.has(next)) {
             continue;
         }
         visited.add(next);
-        count += 1;
         for (var i = 0; i < childrenFn(next).length; i++) {
             var child = childrenFn(next)[i];
             if (!visited.has(child)) {

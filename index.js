@@ -42,7 +42,6 @@ window.onload = function () {
             }
 
             let tas = {};
-            console.log(results);
             for (var i = 1; i < results.data.length; i++) {
                 let taName, ta142, ta143, ta143x, num142, num143, num143x, num14x, cohort;
                 [taName, ta142, ta143, ta143x, num142, num143, num143x, num14x, cohort] = results.data[i];
@@ -59,7 +58,6 @@ window.onload = function () {
                                 "children" : [] 
                             }
             }
-            console.log(tas);
             let links = [];
 
             let taNames = Array.from(Object.keys(tas));
