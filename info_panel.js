@@ -9,7 +9,7 @@ export var buildInfoPanel = (function(data, color, lineage) {
     var totalQuarters = sumQuarters(data);
     var veteran = totalQuarters >= 3 ? `<i class="fa fa-trophy" aria-hidden="true"></i> ` : "";
     document.getElementById("pic").innerHTML = img;
-    document.getElementById("name").innerHTML = veteran + data.id;
+    document.getElementById("name").innerHTML = /*veteran +*/ data.id;
     document.getElementsByTagName("h2")[0].innerHTML = `Started ${data.cohort}`;
     document.getElementsByTagName("h2")[0].style.color = "#242323";
     if (data.num_142_quarters > 0) {
@@ -57,12 +57,101 @@ export var buildInfoPanel = (function(data, color, lineage) {
     addCount(lineage.parents.size - 1, lineage.parents.size - 1 == 1 ? "ancestor" : "ancestors");
     addCount(lineage.children.size - 1, lineage.children.size - 1 == 1 ? "descendant" : "descendants");
     addCount(data.children.length, data.children.length == 1 ? "child" : "children");
+
+    /*
+    <button type="button" class="collapsible"><i class="fa fa-trophy" aria-hidden="true"></i> Achievements</button>
+        <div class="content">
+        <p>Lorem ipsum...</p>
+        </div>
+    */
+
+    
+
+    // Kudos
+    var button = document.createElement("button");
+    button.id = "achieveButton"
+    button.className = "collapsible";
+    button.type = "button";
+    button.innerHTML = `<i class="fa fa-trophy" aria-hidden="true"></i> Kudos`;
+    var content = document.createElement("div");
+    content.id = "achieveContent"
+    content.className = "content";
+    if (totalQuarters >= 3) {
+        var p = document.createElement("p");
+        p.innerHTML = `<i class="fa fa-award"></i> Veteran TA`;
+        content.appendChild(p);
+    }
+
+    var listAchievements = data.kudos.split(",");
+    var added = false;
+    listAchievements.forEach(function (achievement) {
+        if (achievement) {
+            added = true;
+            var p = document.createElement("p");
+            p.innerHTML = `<i class="fa fa-award"></i> ${achievement}`;
+            content.appendChild(p);
+        }
+    });
+
+    if (totalQuarters >= 3 || added) {
+        console.log(totalQuarters);
+        console.log(listAchievements);
+        document.getElementById("infoPanel").appendChild(button);
+        document.getElementById("infoPanel").appendChild(content);
+    }
+
+    // Nicknames
+    var button = document.createElement("button");
+    button.id = "nicknamesButton"
+    button.className = "collapsible";
+    button.type = "button";
+    button.innerHTML = `<i class="fas fa-address-card"></i> Nicknames`;
+    var content = document.createElement("div");
+    content.id = "nicknamesContent"
+    content.className = "content";
+
+    var listNames = data.nicknames.split(",");
+    listNames.forEach(function (name) {
+        var p = document.createElement("p");
+        p.innerHTML = `${name}`;
+        content.appendChild(p);
+    });
+
+    if (data.nicknames) {
+        document.getElementById("infoPanel").appendChild(button);
+        document.getElementById("infoPanel").appendChild(content);
+    }
+
+    var coll = document.getElementsByClassName("collapsible");
+    var i;
+    
+    for (i = 0; i < coll.length; i++) {
+      coll[i].addEventListener("click", function() {
+        this.classList.toggle("active");
+        var content = this.nextElementSibling;
+        if (content.style.maxHeight){
+          content.style.maxHeight = null;
+        } else {
+          content.style.maxHeight = content.scrollHeight + "px";
+        }
+      });
+    }
 });
 
 export var resetInfoPanel = (function resetInfoPanel() {
     if (document.contains(document.getElementById("countInfo"))) {
         document.getElementById("countInfo").remove();
     }
+    if (document.contains(document.getElementById("achieveButton"))) {
+        document.getElementById("achieveButton").remove();
+        document.getElementById("achieveContent").remove();
+    }
+
+    if (document.contains(document.getElementById("nicknamesButton"))) {
+        document.getElementById("nicknamesButton").remove();
+        document.getElementById("nicknamesContent").remove();
+    }
+
     document.getElementById("pic").innerHTML = `<img style="width:100%; height:100px;border-radius: 10%;background: none;"  src="resources/error_pics/no_cohort.svg"/>`;
     document.getElementById("name").innerHTML = "TA Family Tree Viz"
     document.getElementsByTagName("h2")[0].innerHTML = "";

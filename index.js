@@ -32,7 +32,10 @@ window.onload = function () {
                         "num_14x_quarters" : 0,
                         "cohort" :  "05au",                
                         "img" : parent.replace(" ", "_").toLowerCase(),
-                        "children" : [] };
+                        "children" : [],
+                        "kudos" : "" ,
+                        "nicknames" : ""
+                     };
                 }
                 if (parent !== "") {
                     links.push({"source" : parent, "target" : child, "type": relation, "info_src": tas[parent], "info_child" :tas[child]});
@@ -42,8 +45,8 @@ window.onload = function () {
 
             let tas = {};
             for (var i = 1; i < results.data.length; i++) {
-                let taName, ta142, ta143, ta143x, num142, num143, num143x, num14x, cohort;
-                [taName, ta142, ta143, ta143x, num142, num143, num143x, num14x, cohort] = results.data[i];
+                let taName, ta142, ta143, ta143x, num142, num143, num143x, num14x, cohort, kudos, nicknames;
+                [taName, ta142, ta143, ta143x, num142, num143, num143x, num14x, cohort, kudos, nicknames] = results.data[i];
                 tas[taName] = { "id" : taName,
                                 "parent142" : ta142,
                                 "parent143" : ta143,
@@ -54,7 +57,9 @@ window.onload = function () {
                                 "num_14x_quarters" : num14x,
                                 "cohort" : cohort,
                                 "img" : taName.replace(" ", "_").toLowerCase(),
-                                "children" : [] 
+                                "children" : [],
+                                "kudos" : kudos,
+                                "nicknames" : nicknames
                             }
             }
             let links = [];
