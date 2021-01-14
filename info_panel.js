@@ -1,157 +1,159 @@
-let COHORT_IMGS = new Set(["15sp", "16sp", "17au", "18au", "18sp", "18wi", "19au", "19sp", "19wi"])
+const COHORT_IMGS = new Set(["15sp", "16sp", "17au", "18au", "18sp", "18wi", "19au", "19sp", "19wi"])
+const VETERAN_COUNT = 3;
 
-export var buildInfoPanel = (function(data, color, lineage) {
-    resetInfoPanel();
-    document.getElementById("cohortTAs").innerHTML = "";
+export let buildInfoPanel = ((data, color, lineage) => {
+    function getImageURL(data) {
+        if (data.img) {
+            return data.img;
+        }
+        let taName = data.id;
+        taName = taName
+            .toLowerCase()
+            .replace(" ", "_");
+        return `https://gradeit.cs.washington.edu/uwcse/resources/${taName}.jpg`
+    }
+
+    function createDisplayPicture(data) {
+        let imgUrl = getImageURL(data);
+        let img = document.createElement("img");
+        img.id = "displayPic";
+        img.src = imgUrl;
+        img.onerror = (source) => {
+            source.target.src='resources/error_pics/dubs.jpg';
+        };
+        document.getElementById("pic").appendChild(img);
+    }
+
+    function createNumQuartersElement(numQuarters, course) {
+        if (numQuarters > 0) {
+            document.getElementById(`num${course}`).innerHTML = `${course} quarters: ${numQuarters}`;
+        }
+        document.getElementById(`num${course}`).style.color = "#242323";
+    }
+
+    function createLineageCountDiv() {
+        function createLineageElement(count, message) {
+            if (count > 0) {
+                let ancestors = document.createElement("h3");
+                ancestors.innerHTML = `${count} ${message}`;
+                countInfo.appendChild(ancestors);
+                ancestors.style.color = "#242323";
+                ancestors.style.margin = "0px";
+            }
+        }
+
+        let countInfo = document.createElement("div");
+        countInfo.style.margin = "0px";
+        countInfo.style.marginTop = "10px";
+        countInfo.id = "countInfo";
+        document.getElementById("infoPanel").appendChild(countInfo);
+
+        createLineageElement(
+            lineage.parents.size - 1,
+            lineage.parents.size - 1 == 1 ? "ancestor" : "ancestors"
+        );
+
+        createLineageElement(
+            lineage.children.size - 1,
+            lineage.children.size - 1 == 1 ? "descendant" : "descendants"
+        );
+
+        createLineageElement(
+            data.children.length,
+            data.children.length == 1 ? "child" : "children"
+        );
+    }
+
+    function createExpandableList(listName, list, decorator = '') {
+        let button = document.createElement("button");
+        button.id = `${listName}Button`;
+        button.className = "collapsible";
+        button.addEventListener("click", () => {
+            this.classList.toggle("active");
+            let content = this.nextElementSibling;
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+            } else {
+                content.style.maxHeight = content.scrollHeight + "px";
+            }
+        });
+        button.type = "button";
+        button.innerHTML = `<i class="fas fa-address-card"></i> ${listName}`;
+        let content = document.createElement("div");
+        content.id = `${listName}Content`;
+        content.className = "content";
+
+        list.forEach(function (elm) {
+            let p = document.createElement("p");
+            p.innerHTML = `${decorator}${elm}`;
+            content.appendChild(p);
+        });
+
+        document.getElementById("infoPanel").appendChild(button);
+        document.getElementById("infoPanel").appendChild(content);
+    }
+
+    resetInfoPanel({clearAll : true});
+
     document.getElementById("infoPanel").style.backgroundColor = color;
-    let imgUrl = data.img ? data.img :`"https://gradeit.cs.washington.edu/uwcse/resources/${data.id.toLowerCase().replace(" ","_")}.jpg"`;
-    var img = `<img src=${imgUrl} onerror="this.src='resources/error_pics/dubs.jpg';" >`
-    var totalQuarters = sumQuarters(data);
-    var veteran = totalQuarters >= 3 ? `<i class="fa fa-trophy" aria-hidden="true"></i> ` : "";
-    document.getElementById("pic").innerHTML = img;
-    document.getElementById("name").innerHTML = /*veteran +*/ data.id;
+
+    createDisplayPicture(data);
+
+    document.getElementById("name").innerHTML = data.id;
     document.getElementsByTagName("h2")[0].innerHTML = `Started ${data.cohort}`;
     document.getElementsByTagName("h2")[0].style.color = "#242323";
-    if (data.num_142_quarters > 0) {
-        document.getElementById("num142").innerHTML = `142 quarters: ${data.num_142_quarters}`;
-    } else {
-        document.getElementById("num142").innerHTML = "";
 
-    }
-    document.getElementById("num142").style.color = "#242323";
-    document.getElementById("num143").style.color = "#242323";
-    document.getElementById("num143x").style.color = "#242323";
-    document.getElementById("num14x").style.color = "#242323";
+    createNumQuartersElement(data.num_142_quarters, '142');
+    createNumQuartersElement(data.num_143_quarters, '143');
+    createNumQuartersElement(data.num_143x_quarters, '143x');
+    createNumQuartersElement(data.num_14x_quarters, '14x');
+
+    let totalQuarters = sumQuarters(data);
+    document.getElementById("total").innerHTML = `Quarters TA'd: ${totalQuarters}`;
     document.getElementById("total").style.color = "#242323";
 
+    createLineageCountDiv();
 
-    if (data.num_143_quarters > 0) {
-        document.getElementById("num143").innerHTML = `143 quarters: ${data.num_143_quarters}`;
-    }
-
-    if (data.num_143x_quarters > 0) {
-        document.getElementById("num143x").innerHTML = `143x quarters: ${data.num_143x_quarters}`;
-    }
-
-    if (data.num_14x_quarters > 0) {
-        document.getElementById("num14x").innerHTML = `14x quarters: ${data.num_14x_quarters}`;
-    }
-    document.getElementById("total").innerHTML = `Quarters TA'd: ${totalQuarters}`;
-
-    var countInfo = document.createElement("div");
-    countInfo.style.margin = "0px";
-    countInfo.style.marginTop = "10px";
-    countInfo.id = "countInfo";
-    document.getElementById("infoPanel").appendChild(countInfo);
-
-    function addCount(count, message) {
-        if (count > 0) {
-            var ancestors = document.createElement("h3");
-            ancestors.innerHTML = `${count} ${message}`;
-            countInfo.appendChild(ancestors);
-            ancestors.style.color = "#242323";
-            ancestors.style.margin = "0px";
+    if (data.kudos || totalQuarters >= VETERAN_COUNT) {
+        let kudosList = totalQuarters >= VETERAN_COUNT ? ['Veteran TA'] : [];
+        if (data.kudos) {
+            kudosList.push(...data.kudos.split(","));
         }
+        createExpandableList("Kudos", kudosList, '<i class="fa fa-award"></i> ');
     }
-
-    addCount(lineage.parents.size - 1, lineage.parents.size - 1 == 1 ? "ancestor" : "ancestors");
-    addCount(lineage.children.size - 1, lineage.children.size - 1 == 1 ? "descendant" : "descendants");
-    addCount(data.children.length, data.children.length == 1 ? "child" : "children");
-
-    
-
-    // Kudos
-    var button = document.createElement("button");
-    button.id = "achieveButton"
-    button.className = "collapsible";
-    button.type = "button";
-    button.innerHTML = `<i class="fa fa-trophy" aria-hidden="true"></i> Kudos`;
-    var content = document.createElement("div");
-    content.id = "achieveContent"
-    content.className = "content";
-    if (totalQuarters >= 3) {
-        var p = document.createElement("p");
-        p.innerHTML = `<i class="fa fa-award"></i> Veteran TA`;
-        content.appendChild(p);
-    }
-
-    var listAchievements = data.kudos.split(",");
-    var added = false;
-    listAchievements.forEach(function (achievement) {
-        if (achievement) {
-            added = true;
-            var p = document.createElement("p");
-            p.innerHTML = `<i class="fa fa-award"></i> ${achievement}`;
-            content.appendChild(p);
-        }
-    });
-
-    if (totalQuarters >= 3 || added) {
-        document.getElementById("infoPanel").appendChild(button);
-        document.getElementById("infoPanel").appendChild(content);
-    }
-
-    // Nicknames
-    var button = document.createElement("button");
-    button.id = "nicknamesButton"
-    button.className = "collapsible";
-    button.type = "button";
-    button.innerHTML = `<i class="fas fa-address-card"></i> Nicknames`;
-    var content = document.createElement("div");
-    content.id = "nicknamesContent"
-    content.className = "content";
-
-    var listNames = data.nicknames.split(",");
-    listNames.forEach(function (name) {
-        var p = document.createElement("p");
-        p.innerHTML = `${name}`;
-        content.appendChild(p);
-    });
 
     if (data.nicknames) {
-        document.getElementById("infoPanel").appendChild(button);
-        document.getElementById("infoPanel").appendChild(content);
-    }
-
-    var coll = document.getElementsByClassName("collapsible");
-    var i;
-    
-    for (i = 0; i < coll.length; i++) {
-      coll[i].addEventListener("click", function() {
-        this.classList.toggle("active");
-        var content = this.nextElementSibling;
-        if (content.style.maxHeight){
-          content.style.maxHeight = null;
-        } else {
-          content.style.maxHeight = content.scrollHeight + "px";
-        }
-      });
+        createExpandableList("Nicknames", data.nicknames.split(","));
     }
 });
 
-export var resetInfoPanel = (function resetInfoPanel() {
+export let resetInfoPanel = ((clearAll=false) => {
     if (document.contains(document.getElementById("countInfo"))) {
         document.getElementById("countInfo").remove();
     }
-    if (document.contains(document.getElementById("achieveButton"))) {
-        document.getElementById("achieveButton").remove();
-        document.getElementById("achieveContent").remove();
+    if (document.contains(document.getElementById("KudosButton"))) {
+        document.getElementById("KudosButton").remove();
+        document.getElementById("KudosContent").remove();
     }
 
-    if (document.contains(document.getElementById("nicknamesButton"))) {
-        document.getElementById("nicknamesButton").remove();
-        document.getElementById("nicknamesContent").remove();
+    if (document.contains(document.getElementById("NicknamesButton"))) {
+        document.getElementById("NicknamesButton").remove();
+        document.getElementById("NicknamesContent").remove();
     }
 
-    document.getElementById("pic").innerHTML = `<img style="width:100%; height:100px;border-radius: 10%;background: none;"  src="resources/error_pics/no_cohort.svg"/>`;
-    document.getElementById("name").innerHTML = "TA Family Tree Viz"
+    if (document.contains(document.getElementById("dipslayPic"))) {
+        document.getElementById("displayPic").remove();
+    }
+
+    document.getElementById("pic").innerHTML = clearAll ? '' : `<img style="width:100%; height:100px;border-radius: 10%;background: none;"  src="resources/error_pics/no_cohort.svg"/>`;
+    document.getElementById("name").innerHTML = clearAll ? '' : "TA Family Tree Viz"
     document.getElementsByTagName("h2")[0].innerHTML = "";
     document.getElementById("num142").innerHTML = "";
     document.getElementById("num143").innerHTML = "";
     document.getElementById("num143x").innerHTML = "";
     document.getElementById("num14x").innerHTML = "";
     document.getElementById("total").innerHTML = "";
-    document.getElementById("cohortTAs").innerHTML = `<p style="color:#232424;">Welcome to the TA "family" tree!</p>
+    document.getElementById("cohortTAs").innerHTML = clearAll ? '' : `<p style="color:#232424;">Welcome to the TA "family" tree!</p>
 
     <p style="font-size:11pt;color:#232424;width:100%;">This displays the hiring data and the 
         "family" relationships between the TAs at the University of Washington starting from the year 2000.
@@ -160,20 +162,20 @@ export var resetInfoPanel = (function resetInfoPanel() {
     <p><a href="https://www.youtube.com/watch?v=6x9Osruma38">Learn more about intro at UW </a></p>`;
 });
 
-export var displayCohort = (function (cohort, people) {
+export let displayCohort = ((cohort, people) => {
     resetInfoPanel();
-    var avgQuarters = 0;
-    var lis = "<ul>";
+    let avgQuarters = 0;
+    let lis = "<ul>";
     people.forEach(element => {
         avgQuarters += sumQuarters(element);
         lis += `<li>${element.id}</li>`;
     });
-    lis +="</ul>";
+    lis += "</ul>";
     avgQuarters = avgQuarters / people.length;
-    var imgUrl = `"resources/cohort_pics/${cohort}.jpg"`;
+    let imgUrl = `"resources/cohort_pics/${cohort}.jpg"`;
     imgUrl = COHORT_IMGS.has(cohort) ? imgUrl : "resources/error_pics/no_cohort.svg";
-    var img = `<img src=${imgUrl} >`;
-    var pic = document.getElementById("pic");
+    let img = `<img src=${imgUrl} >`;
+    let pic = document.getElementById("pic");
     pic.innerHTML = img;
     document.getElementsByTagName("img")[0].style.borderRadius = "10%";
     document.getElementsByTagName("img")[0].style.width = "80%";
@@ -186,7 +188,7 @@ export var displayCohort = (function (cohort, people) {
 });
 
 function sumQuarters(taData) {
-    return parseInt(taData.num_142_quarters) + 
-            parseInt(taData.num_143_quarters) + parseInt(taData.num_143x_quarters) +
-            parseInt(taData.num_14x_quarters);
+    return parseInt(taData.num_142_quarters) +
+        parseInt(taData.num_143_quarters) + parseInt(taData.num_143x_quarters) +
+        parseInt(taData.num_14x_quarters);
 }

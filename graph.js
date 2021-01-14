@@ -17,25 +17,25 @@ import { autocomplete } from './autocomplete.js';
 
 const QUARTERS = ['wi', 'sp', 'su', 'au'];
 
-var separateQuarters = false;
-var width = document.getElementById("vizContainer").clientWidth;
-var height = window.innerHeight - HEIGHT_ADJUST;
-var HEIGHT_ADJUST = 50;
-var color = d3.scaleOrdinal(d3.schemeCategory10);
-var filterSet = new Set();
-var focusNodes = new Set();
-var lightNodes = new Set();
+let separateQuarters = false;
+let width = document.getElementById("vizContainer").clientWidth;
+let HEIGHT_ADJUST = 50;
+let height = window.innerHeight - HEIGHT_ADJUST;
+let color = d3.scaleOrdinal(d3.schemeCategory10);
+let filterSet = new Set();
+let focusNodes = new Set();
+let lightNodes = new Set();
 
-var allData;
-var data;
-var simulation;
-var node;
-var link;
+let allData;
+let data;
+let simulation;
+let node;
+let link;
 
-var svg = d3.select("#viz");
-var graphContainer = svg.append("g").attr("id", "graph");
-var linkData = graphContainer.append("g").attr("class", "links");
-var nodeData = graphContainer.append("g").attr("class", "nodes");
+let svg = d3.select("#viz");
+let graphContainer = svg.append("g").attr("id", "graph");
+let linkData = graphContainer.append("g").attr("class", "links");
+let nodeData = graphContainer.append("g").attr("class", "nodes");
 
 document.getElementById("separateQuarters").onclick = function() {
     this.innerHTML = `${separateQuarters ? "Separate" : "Collapse"} Quarters`;
@@ -44,12 +44,12 @@ document.getElementById("separateQuarters").onclick = function() {
 }
 
 // sets up zoom
-var zoom = d3.zoom()
+let zoom = d3.zoom()
     .on("zoom", function() {
-        var b = d3.select("#graph").node().getBBox();
-        var x0 = b.x;
-        var x1 = b.x + b.width;
-        var t = d3.event.transform;
+        let b = d3.select("#graph").node().getBBox();
+        let x0 = b.x;
+        let x1 = b.x + b.width;
+        let t = d3.event.transform;
         if (t.invertX(0) > x0) t.x = -x0 * t.k;
         else if (t.invertX(width) < x1) t.x = width - x1 * t.k;
         graphContainer.attr("transform", t);
@@ -66,7 +66,7 @@ function resizeWindow() {
 }
 
 // Arrow heads marker designs
-var defs = svg.append('defs');
+let defs = svg.append('defs');
 buildArrowHeads();
 
 function buildArrowHeads() {
@@ -99,7 +99,7 @@ export function loadGraphFromJson(graph) {
         .force("x", d3.forceX(function(d) { return width / 2; }).strength(1))
         .on("tick", ticked);
     
-    var cohorts = [...new Set(graph.nodes.map((d) => d.cohort))];
+    let cohorts = [...new Set(graph.nodes.map((d) => d.cohort))];
     autocomplete(document.getElementById("cohortList"), cohorts);
     setUpYears(cohorts);
 
@@ -111,7 +111,7 @@ export function loadGraphFromJson(graph) {
 
     function setUpYears(cohorts) {
         function renderYearButtons() {
-            var button = d3.select("#filter")
+            let button = d3.select("#filter")
             .selectAll("button")
             .data(years)
             .enter();
@@ -132,11 +132,11 @@ export function loadGraphFromJson(graph) {
         }
 
         function maxCohortCountInYear(cohortCounts, year) {
-            var maxQuarter = '';
-            var max = -Infinity;
+            let maxQuarter = '';
+            let max = -Infinity;
             QUARTERS.forEach(function(elm) {
                 elm = `${year}${elm}`;
-                var currentCount = cohortCounts[elm];
+                let currentCount = cohortCounts[elm];
                 if (cohortCounts[elm] > max) {
                     max = currentCount;
                     maxQuarter = elm;
@@ -145,8 +145,8 @@ export function loadGraphFromJson(graph) {
             return maxQuarter;
         }
 
-        var years = [...new Set(cohorts.map((d) => d.substring(0, 2)))];
-        var cohortCounts = {};
+        let years = [...new Set(cohorts.map((d) => d.substring(0, 2)))];
+        let cohortCounts = {};
         cohorts.forEach(function(coh) {
             if (!(coh in cohortCounts)) {
                 cohortCounts[coh] = 0;
@@ -168,10 +168,10 @@ export function loadGraphFromJson(graph) {
             filterSet.add(d);
             d3.select(this).style("opacity", 0.3);
         }
-        var filteredNodes = allData.nodes.filter((d) => !filterSet.has(d.cohort.substring(0, 2)));
-        var filteredLinks = allData.links
-            .filter((d) => !filterSet.has(d.info_src.cohort.substring(0, 2)) &&
-                    !filterSet.has(d.info_child.cohort.substring(0, 2))
+        let filteredNodes = allData.nodes.filter((d) => !filterSet.has(d.cohort.substring(0, 2)));
+        let filteredLinks = allData.links
+            .filter((d) => !filterSet.has(d.src_cohort.substring(0, 2)) &&
+                    !filterSet.has(d.child_cohort.substring(0, 2))
             );
 
         data = {nodes : filteredNodes, links : filteredLinks};
@@ -205,8 +205,8 @@ export function loadGraphFromJson(graph) {
 
 function renderGraph() {
     simulation.alpha(0.5);
-    var ids = data.nodes.map((d) => d.id);
-    var removeThese = Array.from(focusNodes).filter(function(id) {
+    let ids = data.nodes.map((d) => d.id);
+    let removeThese = Array.from(focusNodes).filter(function(id) {
         return !ids.includes(id);
     });
 
@@ -236,7 +236,7 @@ function renderGraph() {
         .selectAll("g")
             .data(data.nodes, (d) => d.id);
 
-    var transition = nodeData.exit().transition().duration(DURATION)
+    let transition = nodeData.exit().transition().duration(DURATION)
 
     transition.select("circle").attr("r", 0)
     nodeData.exit().remove();
@@ -258,11 +258,11 @@ function renderGraph() {
         .text(function(d) { return d.id; });
 
     node = node.merge(nodeData).on("click", function() {
-        var datum = d3.select(this).datum();
-        var nodeSize;
-        var opacity = 1;
-        var yText;
-        var display = "show";
+        let datum = d3.select(this).datum();
+        let nodeSize;
+        let opacity = 1;
+        let yText;
+        let display = "show";
         if (focusNodes.has(datum.id)) {
             nodeSize = MEDIUM_NODE_SIZE;
             yText = Y_TEXT_MEDIUM;
@@ -293,13 +293,13 @@ function renderGraph() {
     simulation.force("link").links(data.links);
     simulation.force("y", d3.forceY(function (d) { 
         height = window.innerHeight - HEIGHT_ADJUST;
-        var quarter = d.cohort.substring(2);
-        var minYear = parseInt(Math.min(...data.nodes.map((d) => d.cohort.substring(0, 2))));
-        var space = separateQuarters ? QUARTER_GAP : YEAR_GAP;
+        let quarter = d.cohort.substring(2);
+        let minYear = parseInt(Math.min(...data.nodes.map((d) => d.cohort.substring(0, 2))));
+        let space = separateQuarters ? QUARTER_GAP : YEAR_GAP;
 
-        var forceY = height / 2 + (((parseInt(d.cohort.substring(0, 2)) - minYear) * space));
+        let forceY = height / 2 + (((parseInt(d.cohort.substring(0, 2)) - minYear) * space));
         if (separateQuarters) {
-            var adjust = QUARTERS.indexOf(quarter) + 1;
+            let adjust = QUARTERS.indexOf(quarter) + 1;
             forceY -= (space / adjust);
         }
         return forceY;
@@ -310,10 +310,10 @@ function renderGraph() {
     unfocus();
 
     document.getElementById("searchBtn").onclick = function() {
-        var name = document.getElementById("myInput").value;
-        var personDatum = findData(name, allData);
+        let name = document.getElementById("myInput").value;
+        let personDatum = findData(name, allData);
         buildInfoPanel(personDatum, colorCohort(personDatum.cohort), getLineage(name, allData));
-        var person;
+        let person;
         d3.select(".nodes").selectAll("g").each(function(d) {
             if (d.id === name) {
                 person = this;
@@ -321,9 +321,9 @@ function renderGraph() {
         });
 
         if (!person) {
-            var person = allData.nodes.filter((d) => d.id === name)[0];
-            var cohort = person.cohort;
-            var year = cohort.substring(0, 2);
+            let person = allData.nodes.filter((d) => d.id === name)[0];
+            let cohort = person.cohort;
+            let year = cohort.substring(0, 2);
             focusNodes.add(name);
             document.getElementById(year).click();
             return;
@@ -352,7 +352,7 @@ function renderGraph() {
     setOnClickFamilyFilter();
 
     function setOnClickFamilyFilter() { 
-        var elements = [...document.getElementsByClassName("radio")]
+        let elements = [...document.getElementsByClassName("radio")]
         elements.forEach(
             (elm) => elm.onclick = function() {
                 lightNodes.clear();
@@ -372,12 +372,12 @@ function addLightNodes() {
 
 function searchCohort() {
     let cohort = document.getElementById("cohortList").value;
-    var people = data.nodes.filter((d) => d.cohort === cohort);
+    let people = data.nodes.filter((d) => d.cohort === cohort);
 
     if (people.length == 0) {
         people = allData.nodes.filter((d) => d.cohort === cohort);
         people.forEach((a) => focusNodes.add(a.id));
-        var year = people[0].cohort.substring(0, 2);
+        let year = people[0].cohort.substring(0, 2);
         document.getElementById(year).click();
         displayCohort(cohort, people);
         return;
@@ -391,16 +391,16 @@ function searchCohort() {
 }
 
 function findData(id, targetData) {
-    var result = targetData.nodes.filter((d) => d.id === id);
+    let result = targetData.nodes.filter((d) => d.id === id);
     return result ? result[0] : undefined;
 }
 
 function searchBfs(start, childrenFn) {
-    var explore = new Queue();
+    let explore = new Queue();
     explore.add(start);
-    var visited = new Set();
+    let visited = new Set();
     while (!explore.isEmpty()) {
-        var next = explore.remove()
+        let next = explore.remove()
         if (visited.has(next)) {
             continue;
         }
@@ -414,13 +414,13 @@ function searchBfs(start, childrenFn) {
 // targetData for where you want to find lineage
 // give it data for filtering and allData to get full lineage
 function getLineage(startId, targetData) {
-    var familyFilter = getCheckedRadioValue("familySelection");
-    var lineage = new Set();
+    let familyFilter = getCheckedRadioValue("familySelection");
+    let lineage = new Set();
     if (familyFilter === "single") {
         lineage.add(startId);
     }
-    var children = []
-    var parents = []
+    let children = []
+    let parents = []
     if (familyFilter === "children" || familyFilter === "all") {
         children = searchBfs(findData(startId, targetData), function(elm) {
             if (!elm) {
@@ -435,7 +435,7 @@ function getLineage(startId, targetData) {
             if (!elm) {
                 return [];
             }
-            var result = [elm.parent142, elm.parent143, elm.parent143x];
+            let result = [elm.parent142, elm.parent143, elm.parent143x];
             return result.filter((d) => d).map((d) => findData(d, targetData)).filter((d) => d);
         });
     }
@@ -443,20 +443,20 @@ function getLineage(startId, targetData) {
 }
 
 function unfocus() {
-    var nodeSize = (d) => focusNodes.has(d.id) ? LARGE_NODE_SIZE : NODE_SIZE;
-    var opacity = (d) => lightNodes.has(d.id) || lightNodes.size == 0 ? 1 : LIGHT_OPACITY;
-    var yText = (d) => focusNodes.has(d.id) ? Y_TEXT_LARGE : Y_TEXT_SMALL;
-    var display = (d) => lightNodes.has(d.id) ? "show" : "none"
+    let nodeSize = (d) => focusNodes.has(d.id) ? LARGE_NODE_SIZE : NODE_SIZE;
+    let opacity = (d) => lightNodes.has(d.id) || lightNodes.size == 0 ? 1 : LIGHT_OPACITY;
+    let yText = (d) => focusNodes.has(d.id) ? Y_TEXT_LARGE : Y_TEXT_SMALL;
+    let display = (d) => lightNodes.has(d.id) ? "show" : "none"
 
     animateNode(node, nodeSize, opacity, yText, display);
 
-    var linkOpacity = (d) => lightNodes.has(d.source.id) && lightNodes.has(d.target.id) ? 1 : LIGHT_OPACITY;
-    var strokeWidth = (d) => lightNodes.has(d.source.id) && lightNodes.has(d.target.id) ? "2px" : "1px";
+    let linkOpacity = (d) => lightNodes.has(d.source.id) && lightNodes.has(d.target.id) ? 1 : LIGHT_OPACITY;
+    let strokeWidth = (d) => lightNodes.has(d.source.id) && lightNodes.has(d.target.id) ? "2px" : "1px";
     animateLinks(linkOpacity, strokeWidth);
 }
 
 function getLineageSet(parentsAndChildren) {
-    var lineage = new Set()
+    let lineage = new Set()
     parentsAndChildren.children.forEach((a) => lineage.add(a.id));
     parentsAndChildren.parents.forEach((a) => lineage.add(a.id));
     return lineage;
@@ -465,11 +465,11 @@ function getLineageSet(parentsAndChildren) {
 function focus(person) {
 
     buildInfoPanel(person, colorCohort(person.cohort), getLineage(person.id, allData));
-    var id = person.id;
-    var parentsAndChildren = getLineage(person.id, data);
-    var lineage = getLineageSet(parentsAndChildren);
+    let id = person.id;
+    let parentsAndChildren = getLineage(person.id, data);
+    let lineage = getLineageSet(parentsAndChildren);
 
-    var nodeSize = function(d) {
+    let nodeSize = function(d) {
         if (focusNodes.has(d.id)) {
             return LARGE_NODE_SIZE;
         } else if (d.id == id) {
@@ -479,14 +479,14 @@ function focus(person) {
         }
     };
 
-    var opacity = function(d) { return lineage.has(d.id) ? 1 : LIGHT_OPACITY; };
-    var yText = (d) => focusNodes.has(d.id) ? Y_TEXT_LARGE : Y_TEXT_SMALL;
-    var display = (d) => lineage.has(d.id) ? "show" : "none";
+    let opacity = function(d) { return lineage.has(d.id) ? 1 : LIGHT_OPACITY; };
+    let yText = (d) => focusNodes.has(d.id) ? Y_TEXT_LARGE : Y_TEXT_SMALL;
+    let display = (d) => lineage.has(d.id) ? "show" : "none";
 
     animateNode(node, nodeSize, opacity, yText, display);
 
-    var linkOpacity = (d) => lineage.has(d.source.id) && lineage.has(d.target.id) ? 1 : LIGHT_OPACITY;
-    var strokeWidth = (d) => lineage.has(d.source.id) && lineage.has(d.target.id) ? "2px" : "1px";
+    let linkOpacity = (d) => lineage.has(d.source.id) && lineage.has(d.target.id) ? 1 : LIGHT_OPACITY;
+    let strokeWidth = (d) => lineage.has(d.source.id) && lineage.has(d.target.id) ? "2px" : "1px";
     animateLinks(linkOpacity, strokeWidth);
 }
 
@@ -530,8 +530,8 @@ function animateLinks(opacity, strokeWidth) {
 }
 
 function getCheckedRadioValue(name) {
-    var elements = document.getElementsByName(name);
-    for (var i=0; i<elements.length; i++) {
+    let elements = document.getElementsByName(name);
+    for (let i=0; i<elements.length; i++) {
         if (elements[i].checked) return elements[i].value;
     }
 }

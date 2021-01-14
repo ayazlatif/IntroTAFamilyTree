@@ -13,16 +13,10 @@ export const Y_TEXT_LARGE = 1.8 * LARGE_NODE_SIZE;
 export const YEAR_GAP = 200;
 export const QUARTER_GAP = 500;
 
-const DATA = "https://cors-anywhere.herokuapp.com/https://docs.google.com/spreadsheets/d/e/2PACX-1vQh1nE1K_4KeNgcCpM5Y0OFEG5hyweGzNP4d0SZBu7VgkZeNjeESvWWAK_CMIlDXqiybLjZkTw371I0/pub?gid=0&single=true&output=csv";
-
-const Http = new XMLHttpRequest();
-const url = 'https://nameless-atoll-70309.herokuapp.com/api/getTas';
-
-window.onload = function() {
-    Http.onreadystatechange = function() {
-        if (this.readyState==4 && this.status==200) {
-            let spreadsheet_data = JSON.parse(Http.response);
-            var results = spreadsheet_data["values"];
+window.onload = () => {
+    fetch('https://nameless-atoll-70309.herokuapp.com/api/getTas')
+        .then(response => response.json())
+        .then(spreadsheet_data => {
             function addEdge(parent, child, relation) {
                 if ((!(parent in tas)) && parent !== "") {
                     taNames.push(parent);
@@ -42,15 +36,46 @@ window.onload = function() {
                     };
                 }
                 if (parent !== "") {
-                    links.push({"source" : parent, "target" : child, "type": relation, "info_src": tas[parent], "info_child" :tas[child]});
+                    links.push({
+                        "source" : parent,
+                        "target" : child,
+                        "type": relation,
+                        "src_cohort": tas[parent]["cohort"],
+                        "child_cohort" : tas[child]["cohort"]
+                    });
                     tas[parent]["children"].push(tas[child]);
                 }
             }
 
             let tas = {};
-            for (var i = 1; i < results.length; i++) {
-                let taName, ta142, ta143, ta143x, num142, num143, num143x, num14x, cohort, kudos, nicknames, img;
-                [taName, ta142, ta143, ta143x, num142, num143, num143x, num14x, cohort, kudos, nicknames, img] = results[i];
+            let results = spreadsheet_data["values"];
+            for (let i = 1; i < results.length; i++) {
+                let taName;
+                let ta142;
+                let ta143;
+                let ta143x;
+                let num142;
+                let num143;
+                let num143x;
+                let num14x;
+                let cohort;
+                let kudos;
+                let nicknames;
+                let img;
+                [
+                    taName,
+                    ta142,
+                    ta143,
+                    ta143x,
+                    num142,
+                    num143,
+                    num143x,
+                    num14x,
+                    cohort,
+                    kudos,
+                    nicknames,
+                    img
+                ] = results[i];
                 tas[taName] = { "id" : taName,
                                 "parent142" : ta142 ? ta142 : '',
                                 "parent143" : ta143 ? ta143 : '',
@@ -66,23 +91,24 @@ window.onload = function() {
                                 "nicknames" : nicknames ? nicknames : ''
                             }
             }
-            let links = [];
 
-            let taNames = Array.from(Object.keys(tas));
+            let links = []; // updated in add edge
+            let taNames = Array.from(Object.keys(tas)); // updated in add edge
             taNames.forEach(function(taName) {
                 addEdge(tas[taName]["parent142"], taName, "parent142")
                 addEdge(tas[taName]["parent143"], taName, "parent143")
                 addEdge(tas[taName]["parent143x"], taName, "parent143x")
             });
+
             let nodes = [];
             taNames.forEach(function(taName) {
                 nodes.push(tas[taName]);
             });
 
-            loadGraphFromJson({"nodes": nodes, "links": links});
+            loadGraphFromJson({
+                "nodes": nodes,
+                "links": links
+            });
             document.getElementById("testing").classList.remove("loader");
-        }
-    }
-    Http.open("GET", url, true);
-    Http.send();
+        });
 }

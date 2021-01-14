@@ -280,11 +280,11 @@ img {
     /* font-size: 15px; */
   }
 
-  #nicknamesButton {
+  #NicknamesButton {
       background-color: lightseagreen;
   }
 
-  #nicknamesButton:hover, #nicknamesButton.active {
+  #NicknamesButton:hover, #NicknamesButton.active {
     background-color: lightgreen;
 }
 
