@@ -16,7 +16,8 @@ export const QUARTER_GAP = 500;
 const DATA = "https://cors-anywhere.herokuapp.com/https://docs.google.com/spreadsheets/d/e/2PACX-1vQh1nE1K_4KeNgcCpM5Y0OFEG5hyweGzNP4d0SZBu7VgkZeNjeESvWWAK_CMIlDXqiybLjZkTw371I0/pub?gid=0&single=true&output=csv";
 
 const Http = new XMLHttpRequest();
-const url = 'https://nameless-atoll-70309.herokuapp.com/api/getTaNodes';
+// const url = 'https://nameless-atoll-70309.herokuapp.com/api/getTaNodes';
+const url = 'http://localhost:3000/api/getTaNodes'
 window.onload = function() {
     Http.onreadystatechange = function() {
         if (this.readyState==4 && this.status==200) {

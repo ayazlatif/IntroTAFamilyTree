@@ -4,7 +4,7 @@ export var buildInfoPanel = (function(data, color, lineage) {
     resetInfoPanel();
     document.getElementById("cohortTAs").innerHTML = "";
     document.getElementById("infoPanel").style.backgroundColor = color;
-    var imgUrl = `"https://gradeit.cs.washington.edu/uwcse/resources/${data.img}.jpg"`;
+    let imgUrl = data.img ? data.img :`"https://gradeit.cs.washington.edu/uwcse/resources/${data.id.toLowerCase().replace(" ","_")}.jpg"`;
     var img = `<img src=${imgUrl} onerror="this.src='resources/error_pics/dubs.jpg';" >`
     var totalQuarters = sumQuarters(data);
     var veteran = totalQuarters >= 3 ? `<i class="fa fa-trophy" aria-hidden="true"></i> ` : "";
@@ -58,13 +58,6 @@ export var buildInfoPanel = (function(data, color, lineage) {
     addCount(lineage.children.size - 1, lineage.children.size - 1 == 1 ? "descendant" : "descendants");
     addCount(data.children.length, data.children.length == 1 ? "child" : "children");
 
-    /*
-    <button type="button" class="collapsible"><i class="fa fa-trophy" aria-hidden="true"></i> Achievements</button>
-        <div class="content">
-        <p>Lorem ipsum...</p>
-        </div>
-    */
-
     
 
     // Kudos
@@ -94,8 +87,6 @@ export var buildInfoPanel = (function(data, color, lineage) {
     });
 
     if (totalQuarters >= 3 || added) {
-        console.log(totalQuarters);
-        console.log(listAchievements);
         document.getElementById("infoPanel").appendChild(button);
         document.getElementById("infoPanel").appendChild(content);
     }
@@ -179,7 +170,6 @@ export var displayCohort = (function (cohort, people) {
     });
     lis +="</ul>";
     avgQuarters = avgQuarters / people.length;
-    console.log(avgQuarters);
     var imgUrl = `"resources/cohort_pics/${cohort}.jpg"`;
     imgUrl = COHORT_IMGS.has(cohort) ? imgUrl : "resources/error_pics/no_cohort.svg";
     var img = `<img src=${imgUrl} >`;
