@@ -1,4 +1,5 @@
 import { loadGraphFromJson } from './graph.js'
+import { initInfoPanel } from './info_panel.js';
 
 export const NODE_SIZE = 15;
 export const MEDIUM_NODE_SIZE = 25;
@@ -14,6 +15,7 @@ export const YEAR_GAP = 200;
 export const QUARTER_GAP = 500;
 
 window.onload = () => {
+    initInfoPanel();
     fetch('https://nameless-atoll-70309.herokuapp.com/api/getTas')
         .then(response => response.json())
         .then(spreadsheet_data => {
@@ -109,6 +111,6 @@ window.onload = () => {
                 "nodes": nodes,
                 "links": links
             });
-            document.getElementById("testing").classList.remove("loader");
+            document.getElementById("load").classList.remove("loader");
         });
 }

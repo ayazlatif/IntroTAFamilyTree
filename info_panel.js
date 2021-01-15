@@ -1,5 +1,26 @@
-const COHORT_IMGS = new Set(["15sp", "16sp", "17au", "18au", "18sp", "18wi", "19au", "19sp", "19wi"])
 const VETERAN_COUNT = 3;
+
+export let initInfoPanel = () => {
+    function createTagWithId(tag, id) {
+        let element = document.createElement(tag);
+        element.id = id;
+        infoPanel.appendChild(element);
+    }
+    let infoPanel = document.getElementById("infoPanel");
+    createTagWithId("h1", "pic");
+    let img = document.createElement("img");
+    img.id = "displayPic";
+    document.getElementById("pic").appendChild(img);
+    createTagWithId("h1", "name");
+    createTagWithId("h2", "cohortInfo");
+    createTagWithId("div", "cohortTAs");
+    createTagWithId("h3", "num142");
+    createTagWithId("h3", "num143");
+    createTagWithId("h3", "num143x");
+    createTagWithId("h3", "num14x");
+    createTagWithId("h3", "total");
+    resetInfoPanel();
+}
 
 export let buildInfoPanel = ((data, color, lineage) => {
     function getImageURL(data) {
@@ -11,17 +32,6 @@ export let buildInfoPanel = ((data, color, lineage) => {
             .toLowerCase()
             .replace(" ", "_");
         return `https://gradeit.cs.washington.edu/uwcse/resources/${taName}.jpg`
-    }
-
-    function createDisplayPicture(data) {
-        let imgUrl = getImageURL(data);
-        let img = document.createElement("img");
-        img.id = "displayPic";
-        img.src = imgUrl;
-        img.onerror = (source) => {
-            source.target.src='resources/error_pics/dubs.jpg';
-        };
-        document.getElementById("pic").appendChild(img);
     }
 
     function createNumQuartersElement(numQuarters, course) {
@@ -97,7 +107,8 @@ export let buildInfoPanel = ((data, color, lineage) => {
 
     document.getElementById("infoPanel").style.backgroundColor = color;
 
-    createDisplayPicture(data);
+    createDisplayPicture(getImageURL(data), 'dubs.jpg');
+    document.getElementById("displayPic").className = "";
 
     document.getElementById("name").innerHTML = data.id;
     document.getElementsByTagName("h2")[0].innerHTML = `Started ${data.cohort}`;
@@ -141,11 +152,8 @@ export let resetInfoPanel = ((clearAll=false) => {
         document.getElementById("NicknamesContent").remove();
     }
 
-    if (document.contains(document.getElementById("dipslayPic"))) {
-        document.getElementById("displayPic").remove();
-    }
-
-    document.getElementById("pic").innerHTML = clearAll ? '' : `<img style="width:100%; height:100px;border-radius: 10%;background: none;"  src="resources/error_pics/no_cohort.svg"/>`;
+    document.getElementById("displayPic").src = "resources/error_pics/no_cohort.svg";
+    document.getElementById("displayPic").className = "cohortPic";
     document.getElementById("name").innerHTML = clearAll ? '' : "TA Family Tree Viz"
     document.getElementsByTagName("h2")[0].innerHTML = "";
     document.getElementById("num142").innerHTML = "";
@@ -163,32 +171,39 @@ export let resetInfoPanel = ((clearAll=false) => {
 });
 
 export let displayCohort = ((cohort, people) => {
-    resetInfoPanel();
+    resetInfoPanel(true);
     let avgQuarters = 0;
-    let lis = "<ul>";
-    people.forEach(element => {
-        avgQuarters += sumQuarters(element);
-        lis += `<li>${element.id}</li>`;
+    let peopleInCohortList = document.createElement("ul");
+    people.forEach(person => {
+        let li = document.createElement("li");
+        avgQuarters += sumQuarters(person);
+        li.textContent = person.id;
+        peopleInCohortList.appendChild(li);
     });
-    lis += "</ul>";
+    createDisplayPicture(`resources/cohort_pics/${cohort}.jpg`, 'no_cohort.svg');
+    document.getElementById("displayPic").className = "cohortPic";
+
     avgQuarters = avgQuarters / people.length;
-    let imgUrl = `"resources/cohort_pics/${cohort}.jpg"`;
-    imgUrl = COHORT_IMGS.has(cohort) ? imgUrl : "resources/error_pics/no_cohort.svg";
-    let img = `<img src=${imgUrl} >`;
-    let pic = document.getElementById("pic");
-    pic.innerHTML = img;
-    document.getElementsByTagName("img")[0].style.borderRadius = "10%";
-    document.getElementsByTagName("img")[0].style.width = "80%";
-    document.getElementsByTagName("img")[0].style.height = "100%";
-    document.getElementsByTagName("img")[0].style.background = "none";
-    document.getElementById("name").innerHTML = `${cohort} Cohort`;
-    document.getElementById("num142").innerHTML = `Avg # Quarters TA'd: ${avgQuarters.toFixed(2)}`;
-    document.getElementById("num143").innerHTML = `Cohort size: ${people.length}`
-    document.getElementById("cohortTAs").innerHTML = lis;
+
+    document.getElementById("displayPic").className = "cohortPic";
+    document.getElementById("name").textContent = `${cohort} Cohort`;
+    document.getElementById("num142").textContent = `Avg # Quarters TA'd: ${avgQuarters.toFixed(2)}`;
+    document.getElementById("num143").textContent = `Cohort size: ${people.length}`
+    document.getElementById("cohortTAs").appendChild(peopleInCohortList);
 });
 
 function sumQuarters(taData) {
     return parseInt(taData.num_142_quarters) +
         parseInt(taData.num_143_quarters) + parseInt(taData.num_143x_quarters) +
         parseInt(taData.num_14x_quarters);
+}
+
+function createDisplayPicture(imgUrl, errorPic) {
+    let img = document.getElementById("displayPic");
+    img.id = "displayPic";
+    img.src = imgUrl;
+    img.onerror = (source) => {
+        source.target.src=`resources/error_pics/${errorPic}`;
+    };
+    document.getElementById("pic").appendChild(img);
 }

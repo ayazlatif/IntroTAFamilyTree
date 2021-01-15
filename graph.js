@@ -16,12 +16,12 @@ import { Queue } from './Queue.js';
 import { autocomplete } from './autocomplete.js';
 
 const QUARTERS = ['wi', 'sp', 'su', 'au'];
+const HEIGHT_ADJUST = 50;
+const COLOR = d3.scaleOrdinal(d3.schemeCategory10);
 
 let separateQuarters = false;
 let width = document.getElementById("vizContainer").clientWidth;
-let HEIGHT_ADJUST = 50;
 let height = window.innerHeight - HEIGHT_ADJUST;
-let color = d3.scaleOrdinal(d3.schemeCategory10);
 let filterSet = new Set();
 let focusNodes = new Set();
 let lightNodes = new Set();
@@ -537,6 +537,6 @@ function getCheckedRadioValue(name) {
 }
 
 function colorCohort(cohort) {
-    return color(parseInt(cohort.substring(0, 2))
+    return COLOR(parseInt(cohort.substring(0, 2))
             + QUARTERS.indexOf(cohort.substring(2)));
 }
