@@ -78,7 +78,7 @@ export let buildInfoPanel = ((data, color, lineage) => {
         let button = document.createElement("button");
         button.id = `${listName}Button`;
         button.className = "collapsible";
-        button.addEventListener("click", () => {
+        button.addEventListener("click", function() {
             this.classList.toggle("active");
             let content = this.nextElementSibling;
             if (content.style.maxHeight) {
