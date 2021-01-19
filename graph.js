@@ -103,9 +103,6 @@ export function loadGraphFromJson(graph) {
     autocomplete(document.getElementById("cohortList"), cohorts);
     setUpYears(cohorts);
 
-    // Randomly show a year
-    document.getElementById(Math.floor(Math.random() * 10) + 11).click();
-
     resizeWindow();
     svg.call(zoom);
 
@@ -145,6 +142,12 @@ export function loadGraphFromJson(graph) {
             return maxQuarter;
         }
 
+        function getRandomYear(years) {
+            const minYear = 6;
+            return Math.max(6, Math.floor(Math.random() * years.length))
+                .toString().padStart(2, 0);
+        }
+
         let years = [...new Set(cohorts.map((d) => d.substring(0, 2)))];
         let cohortCounts = {};
         cohorts.forEach(function(coh) {
@@ -157,6 +160,8 @@ export function loadGraphFromJson(graph) {
         years.sort();
         years.forEach((y) => filterSet.add(y));
         renderYearButtons();
+
+        document.getElementById(getRandomYear(years)).click();
     }
 
     function filterYears(d) {
