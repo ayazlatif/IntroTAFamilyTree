@@ -86,7 +86,7 @@ window.onload = () => {
                                 "num_143_quarters" : num143 ? num143 : 0,
                                 "num_143x_quarters" : num143x ? num143x : 0,
                                 "num_14x_quarters" : num14x ? num14x : 0,
-                                "cohort" : cohort ? cohort : 0,
+                                "cohort" : cohort ? cohort : '05au',
                                 "img" : img,
                                 "children" : [],
                                 "kudos" : kudos ? kudos : '',
