@@ -45,6 +45,44 @@ circle:hover, button {
     cursor: pointer;
 }
 
+.selected {
+    opacity: 1;
+}
+
+.unselected {
+    opacity: 0.3;
+}
+
+#wi {
+    background-color: rgb(31, 119, 180);
+}
+
+#sp {
+    background-color: rgb(44, 160, 44);
+}
+
+#su {
+    background-color: rgb(227, 119, 194);
+}
+
+#au {
+    background-color: #ff7f0e;
+}
+
+.quarterButton {
+    width: 50px;
+    margin: 0px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    padding-left: 20px;
+    padding-right: 20px;
+    border: none;
+}
+
+.quarterButton:hover {
+    opacity: 0.5;
+}
+
 #real {
     position: absolute;
     top: 0px;
@@ -200,7 +238,7 @@ h1, h2, h3 {
     width: 230px;
 }
 
-#filter h3, #search h3, #familyFilter h3 {
+.controlpaneltitle {
     background-color: goldenrod;
     padding-top: 10px;
     padding-bottom: 10px;
@@ -222,7 +260,7 @@ h1, h2, h3 {
     cursor: pointer;
 }
 
-#filter h3, #familyFilter {
+#filter h3, #familyFilter, #quarterFilter {
     margin-top: 20px;
 }
 

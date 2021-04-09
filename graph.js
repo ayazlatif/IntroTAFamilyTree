@@ -23,6 +23,7 @@ let separateQuarters = false;
 let width = document.getElementById("vizContainer").clientWidth;
 let height = window.innerHeight - HEIGHT_ADJUST;
 let filterSet = new Set();
+let quarterFilter = new Set();
 let focusNodes = new Set();
 let lightNodes = new Set();
 
@@ -102,9 +103,31 @@ export function loadGraphFromJson(graph) {
     let cohorts = [...new Set(graph.nodes.map((d) => d.cohort))];
     autocomplete(document.getElementById("cohortList"), cohorts);
     setUpYears(cohorts);
+    setUpQuartersOnClick();
 
     resizeWindow();
     svg.call(zoom);
+
+    function setUpQuartersOnClick() {
+        let collection = document.getElementsByClassName("quarterButton");
+        for (var i = 0; i < collection.length; i++) {
+            collection[i].onclick = (d) => {
+                let quarter = d.target.innerText
+                console.log(quarter);
+                if (quarterFilter.has(quarter)) {
+                    quarterFilter.delete(quarter);
+                    d.target.classList.add("selected");
+                    d.target.classList.remove("unselected");
+                } else {
+                    quarterFilter.add(quarter);
+                    d.target.classList.add("unselected");
+                    d.target.classList.remove("selected");
+                }
+                console.log(d);
+                filter()
+            }
+        }
+    }
 
     function setUpYears(cohorts) {
         function renderYearButtons() {
@@ -119,7 +142,16 @@ export function loadGraphFromJson(graph) {
                 .attr("type", "button")
                 .attr("id", (d) => d)
                 .text(function(d) { return "20" + d; })
-                .on("click", filterYears)
+                .on("click", function(d) {
+                    if (filterSet.has(d)) {
+                        filterSet.delete(d);
+                        d3.select(this).style("opacity", 1);
+                    } else {
+                        filterSet.add(d);
+                        d3.select(this).style("opacity", 0.3);
+                    }
+                    filter()
+                })
                 .on("mouseover", function() {
                     d3.select(this).style("opacity", "0.5");
                 })
@@ -164,22 +196,17 @@ export function loadGraphFromJson(graph) {
         document.getElementById(getRandomYear(years)).click();
     }
 
-    function filterYears(d) {
+    function filter() {
 
-        if (filterSet.has(d)) {
-            filterSet.delete(d);
-            d3.select(this).style("opacity", 1);
-        } else {
-            filterSet.add(d);
-            d3.select(this).style("opacity", 0.3);
-        }
-        let filteredNodes = allData.nodes.filter((d) => !filterSet.has(d.cohort.substring(0, 2)));
+        let filteredNodes = allData.nodes.filter((d) => !filterSet.has(d.cohort.substring(0, 2))).filter((d) => !quarterFilter.has(d.cohort.substring(2)));
         let filteredLinks = allData.links
             .filter((d) => !filterSet.has(d.src_cohort.substring(0, 2)) &&
                     !filterSet.has(d.child_cohort.substring(0, 2))
-            );
+            ).filter((d) => !quarterFilter.has(d.src_cohort.substring(2)) && !quarterFilter.has(d.child_cohort.substring(2)));
 
         data = {nodes : filteredNodes, links : filteredLinks};
+        console.log(data);
+        console.log(filterSet);
         renderGraph();
     }
 
@@ -329,8 +356,14 @@ function renderGraph() {
             let person = allData.nodes.filter((d) => d.id === name)[0];
             let cohort = person.cohort;
             let year = cohort.substring(0, 2);
+            let quarter = cohort.substring(2);
             focusNodes.add(name);
-            document.getElementById(year).click();
+            if (filterSet.has(year)) {
+                document.getElementById(year).click();
+            }
+            if (quarterFilter.has(quarter)) {
+                document.getElementById(quarter).click();
+            }
             return;
         }
 
@@ -338,6 +371,7 @@ function renderGraph() {
         getLineageSet(getLineage(name, data)).forEach((a) => lightNodes.add(a));
 
         d3.select(person).dispatch("mouseout"); // focus on this
+        console.log(focusNodes);
     };
 
     document.getElementById("reset").onclick = resetSearch;
