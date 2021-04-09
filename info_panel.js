@@ -167,7 +167,9 @@ export let resetInfoPanel = ((clearAll=false) => {
         "family" relationships between the TAs at the University of Washington starting from the year 2000.
     </p>
 
-    <p><a href="https://www.youtube.com/watch?v=6x9Osruma38">Learn more about intro at UW </a></p>`;
+    <p><a href="https://www.youtube.com/watch?v=6x9Osruma38">Learn more about intro at UW </a></p>
+
+    <p><a href="https://github.com/ayazlatif/IntroTAFamilyTree">Contribute to the source code for this project!</p>`;
 });
 
 export let displayCohort = ((cohort, people) => {
