@@ -61,7 +61,7 @@ zoom.scaleExtent([.1, 1]);
 window.onresize = resizeWindow;
 
 function resizeWindow() {
-    width = document.getElementById("viz").width.baseVal.value;
+    width = document.getElementById("vizContainer").clientWidth;
     height = window.innerHeight - HEIGHT_ADJUST;
     d3.select("#viz").attr("viewBox", `0 0 ${width} ${height}`);
 }

@@ -25,10 +25,6 @@ body, h1, h2, h3 {
     font-family: 'Roboto';
 }
 
-body {
-    background-color: darkcyan;
-}
-
 p {
     text-align: center;
 }
@@ -83,14 +79,6 @@ circle:hover, button {
     opacity: 0.5;
 }
 
-#real {
-    position: absolute;
-    top: 0px;
-    right: 0px;
-    padding: 0px;
-    width: 220px;
-}
-
 .autocomplete {
     position: relative;
     display: inline-block;
@@ -100,13 +88,11 @@ circle:hover, button {
     /* hack too lazy to delete buttons so hid them :P */
     display: none;
 }
-#viz, #legend, #vizContainer {
+
+#legend, #vizContainer {
     background-color: lightcyan;
 }
 
-#viz {
-    margin: 0px;
-}
 #infoPanel {
     background-color: red;
 }
@@ -116,7 +102,7 @@ circle:hover, button {
     padding: 0px;
 }
 
-#infoPanel, #legend {
+/* #infoPanel, #legend {
     position: relative;
     float: left;
     padding: 20px;
@@ -128,24 +114,44 @@ circle:hover, button {
     position: relative;
     float: right;
     width: 100%;
+} */
+
+body {
+    height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 2fr 1fr;
+    gap: 10px;
+    margin: 20px;
+    background-color: darkcyan;
 }
 
-#infoPanel, #legend {
-    width: 17%;
+#infoPanel {
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
+}
+
+#legend {
+    grid-column: 1 / 2;
+    grid-row: 2 / 3;
+}
+
+#vizContainer {
+    grid-column: 2 / 4;
+    grid-row: 1 / 3;
+}
+
+#controlpanel {
+    position: absolute;
+    right: 20px;
+    grid-column: 3 / 4;
+    grid-row: 1 / 3;
+    width: 220px;
+    justify-self: end;
 }
 
 #legend {
     text-align: center;
-}
-
-#vizContainer {
-    position: relative;
-    float: right;
-    margin-top: 10px;
-    margin-right: 10px;
-    margin-left: 0px;
-    padding: 0px;
-    width: 75%;
 }
 
 #reset, #separateQuarters {
@@ -268,6 +274,7 @@ h1, h2, h3 {
     padding-top: 10px;
     padding-bottom: 10px;
     background-color: aliceblue;
+    width: 220px;
 }
 
 #graph circle {

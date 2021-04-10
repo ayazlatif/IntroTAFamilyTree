@@ -1,5 +1,6 @@
 import { loadGraphFromJson } from './graph.js'
 import { initInfoPanel } from './info_panel.js';
+import { makeDraggable } from './draggable_div.js'
 
 export const NODE_SIZE = 15;
 export const MEDIUM_NODE_SIZE = 25;
@@ -16,6 +17,7 @@ export const QUARTER_GAP = 500;
 
 window.onload = () => {
     initInfoPanel();
+    makeDraggable("controlpanel");
     fetch('https://nameless-atoll-70309.herokuapp.com/api/getTas')
         .then(response => response.json())
         .then(spreadsheet_data => {

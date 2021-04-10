@@ -21,73 +21,72 @@
     <div id="vizContainer">
         <div class="loader" id="load"></div>
         <svg id='viz'></svg>
+    </div>
 
-        <div id="real">
-            <div id="search">
-                <h3 class="controlpaneltitle">Search</h3>
+    <div id="controlpanel">
+        <div id="search">
+            <h3 id="controlpanelheader" class="controlpaneltitle">Search</h3>
+            <div class="autocomplete">
+                <form autocomplete="off">
+                    <input id="myInput" type="text" name="taName" placeholder="TA Search: Ayaz Latif">
+                </form>
+            </div>
+            <button id="searchBtn" type="button">Search TA</button>
+
+            <div id="cohort">
                 <div class="autocomplete">
                     <form autocomplete="off">
-                        <input id="myInput" type="text" name="taName" placeholder="TA Search: Ayaz Latif">
+                        <input id="cohortList" type="text" name="cohortList" placeholder="Cohort Search: 15sp">
                     </form>
                 </div>
-                <button id="searchBtn" type="button">Search TA</button>
+                <button id="cohortSearchBtn" type="button">Search Cohort</button>
+            </div>
 
-                <div id="cohort">
-                    <div class="autocomplete">
-                        <form autocomplete="off">
-                            <input id="cohortList" type="text" name="cohortList" placeholder="Cohort Search: 15sp">
-                        </form>
-                    </div>
-                    <button id="cohortSearchBtn" type="button">Search Cohort</button>
+            <div id="reset">Reset</div>
+        </div>
+        <div id="familyFilter">
+            <h3 class="controlpaneltitle">Family Selection Filter</h3>
+            <div id="radios">
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="familySelection" id="optionsRadios1" value="all" checked="checked">
+                        All
+                    </label>
                 </div>
 
-                <div id="reset">Reset</div>
-            </div>
-            <div id="familyFilter">
-                <h3 class="controlpaneltitle">Family Selection Filter</h3>
-                <div id="radios">
-                    <div class="radio">
-                        <label>
-                            <input type="radio" name="familySelection" id="optionsRadios1" value="all"
-                                checked="checked">
-                            All
-                        </label>
-                    </div>
-
-                    <div class="radio">
-                        <label>
-                            <input type="radio" name="familySelection" id="optionsRadios2" value="parents">
-                            Ancestors
-                        </label>
-                    </div>
-                    <div class="radio">
-                        <label>
-                            <input type="radio" name="familySelection" id="optionsRadios3" value="children">
-                            Decendants
-                        </label>
-                    </div>
-                    <div class="radio">
-                        <label>
-                            <input type="radio" name="familySelection" id="optionsRadios4" value="single">
-                            Single TA
-                        </label>
-                    </div>
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="familySelection" id="optionsRadios2" value="parents">
+                        Ancestors
+                    </label>
+                </div>
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="familySelection" id="optionsRadios3" value="children">
+                        Decendants
+                    </label>
+                </div>
+                <div class="radio">
+                    <label>
+                        <input type="radio" name="familySelection" id="optionsRadios4" value="single">
+                        Single TA
+                    </label>
                 </div>
             </div>
+        </div>
 
-            <div id="filter">
-                <h3 class="controlpaneltitle">Year Selection Filter</h3>
-            </div>
+        <div id="filter">
+            <h3 class="controlpaneltitle">Year Selection Filter</h3>
+        </div>
 
-            <div id="separateQuarters">Separate Quarters</div>
+        <div id="separateQuarters">Separate Quarters</div>
 
-            <div id="quarterFilter">
-                <h3 class="controlpaneltitle">Quarter Selection Filter</h3>
-                <button type="button" class="quarterButton" id="wi">wi</button>
-                <button type="button" class="quarterButton" id="sp">sp</button>
-                <button type="button" class="quarterButton" id="su">su</button>
-                <button type="button" class="quarterButton" id="au">au</button>
-            </div>
+        <div id="quarterFilter">
+            <h3 class="controlpaneltitle">Quarter Selection Filter</h3>
+            <button type="button" class="quarterButton" id="wi">wi</button>
+            <button type="button" class="quarterButton" id="sp">sp</button>
+            <button type="button" class="quarterButton" id="su">su</button>
+            <button type="button" class="quarterButton" id="au">au</button>
         </div>
     </div>
 
@@ -97,8 +96,6 @@
         <p class="parent143">--&gt; 143 Parent TA</p>
         <p class="parent143x">--&gt; 143x Parent TA</p>
     </div>
-
-
 </body>
 
 </html>
