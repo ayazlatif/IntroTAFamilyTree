@@ -37,6 +37,16 @@ ul {
     color: #2d2d2d;
 }
 
+.expandableList {
+    list-style: default;
+    margin: 0px;
+}
+
+#KudosContent li {
+    list-style: "🏆";
+    list-style-position: inside;
+}
+
 circle:hover, button {
     cursor: pointer;
 }
@@ -89,65 +99,44 @@ circle:hover, button {
     display: none;
 }
 
-#legend, #vizContainer {
-    background-color: lightcyan;
-}
-
-#infoPanel {
-    background-color: red;
-}
-
 #infoPanel h3 {
     margin : 0px;
     padding: 0px;
 }
 
-/* #infoPanel, #legend {
-    position: relative;
-    float: left;
-    padding: 20px;
-    margin: 10px;
-    overflow: auto;
-}
-
-#viz {
-    position: relative;
-    float: right;
-    width: 100%;
-} */
-
 body {
     height: 100vh;
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows: 2fr 1fr;
-    gap: 10px;
-    margin: 20px;
+    grid-template-columns: 1fr 1fr 3fr;
+    /* gap: 10px; */
+    margin: 0px;
     background-color: darkcyan;
 }
 
 #infoPanel {
+    background-color: red;
     grid-column: 1 / 2;
-    grid-row: 1 / 2;
+    grid-row: 1;
+    padding: 10px;
 }
 
 #legend {
-    grid-column: 1 / 2;
-    grid-row: 2 / 3;
+    width: 220px;
+    grid-column: 2 / 3;
+    grid-row: 1;
+    height: 0px;
 }
 
 #vizContainer {
+    background-color: lightcyan;
     grid-column: 2 / 4;
-    grid-row: 1 / 3;
+    grid-row: 1;
 }
 
 #controlpanel {
     position: absolute;
-    right: 20px;
-    grid-column: 3 / 4;
-    grid-row: 1 / 3;
+    right: 0px;
     width: 220px;
-    justify-self: end;
 }
 
 #legend {
@@ -355,4 +344,9 @@ img {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.2s ease-out;
+    margin: 0px;
+  }
+
+  .content li {
+      padding: 4px;
   }

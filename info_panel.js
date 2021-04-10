@@ -89,18 +89,20 @@ export let buildInfoPanel = ((data, color, lineage) => {
         });
         button.type = "button";
         button.innerHTML = `<i class="fas fa-address-card"></i> ${listName}`;
-        let content = document.createElement("div");
+        let content = document.createElement("ul");
+        content.className = "expandleList"
         content.id = `${listName}Content`;
         content.className = "content";
 
         list.forEach(function (elm) {
-            let p = document.createElement("p");
-            p.innerHTML = `${decorator}${elm}`;
+            let p = document.createElement("li");
+            p.textContent = `${elm}`;
             content.appendChild(p);
         });
 
         document.getElementById("infoPanel").appendChild(button);
         document.getElementById("infoPanel").appendChild(content);
+        button.click()
     }
 
     resetInfoPanel({clearAll : true});

@@ -576,6 +576,8 @@ function getCheckedRadioValue(name) {
 }
 
 function colorCohort(cohort) {
-    return COLOR(parseInt(cohort.substring(0, 2))
-            + QUARTERS.indexOf(cohort.substring(2)));
+    let quarterIndex = QUARTERS.indexOf(cohort.substring(2));
+    let year = cohort.substring(0, 2);
+    let number = parseInt(year) + parseInt(quarterIndex);
+    return COLOR(number);
 }
