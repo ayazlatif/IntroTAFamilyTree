@@ -14,10 +14,19 @@ export const Y_TEXT_MEDIUM = 2 * MEDIUM_NODE_SIZE;
 export const Y_TEXT_LARGE = 1.8 * LARGE_NODE_SIZE;
 export const YEAR_GAP = 200;
 export const QUARTER_GAP = 500;
+export const QUARTERS = ['wi', 'sp', 'su', 'au'];
+
 
 window.onload = () => {
     initInfoPanel();
     makeDraggable("controlpanel");
+    QUARTERS.forEach((quarter) => {
+        let button = document.createElement("button");
+        button.className = "quarterButton";
+        button.id = quarter;
+        button.textContent = quarter;
+        document.getElementById("quarterFilter").appendChild(button);
+    });
     fetch('https://nameless-atoll-70309.herokuapp.com/api/getTas')
         .then(response => response.json())
         .then(spreadsheet_data => {
@@ -113,6 +122,6 @@ window.onload = () => {
                 "nodes": nodes,
                 "links": links
             });
-            document.getElementById("load").classList.remove("loader");
+            document.getElementById("loadContainer").remove();
         });
 }

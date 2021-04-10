@@ -9,6 +9,13 @@
     margin-right: auto;
 }
 
+#loadContainer {
+    width: 0px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 35vh;
+}
+
 .cohortPic {
     border-radius: 10%;
     width: 80%;
@@ -76,7 +83,7 @@ circle:hover, button {
 }
 
 .quarterButton {
-    width: 50px;
+    width: 55px;
     margin: 0px;
     padding-top: 5px;
     padding-bottom: 5px;
@@ -113,6 +120,14 @@ body {
     background-color: darkcyan;
 }
 
+html,body {
+    width: 100%;
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+    overflow-x: hidden;
+}
+
 #infoPanel {
     background-color: red;
     grid-column: 1 / 2;
@@ -144,24 +159,18 @@ body {
 }
 
 #reset, #separateQuarters {
-    width: 210px;
+    width: 220px;
     font-weight: bold;
     text-align: center;
     background-color: #d4d4d4;
+    padding: 5px;
+    margin: 0px;
+    border: none;
 }
 
 #reset:hover, #separateQuarters:hover {
     cursor: pointer;
     background-color: #c0c0c0;
-}
-
-#separateQuarters {
-    width : 210px;
-}
-
-#reset, #separateQuarters {
-    padding: 5px;
-    margin: 0px;
 }
 
 .autocomplete-items {

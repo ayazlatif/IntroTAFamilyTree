@@ -19,7 +19,7 @@
     <div id="infoPanel"></div>
 
     <div id="vizContainer">
-        <div class="loader" id="load"></div>
+        <div id="loadContainer"><div class="loader"></div></div>
         <svg id='viz'></svg>
     </div>
 
@@ -42,7 +42,7 @@
                 <button id="cohortSearchBtn" type="button">Search Cohort</button>
             </div>
 
-            <div id="reset">Reset</div>
+            <button id="reset">Reset</button>
         </div>
         <div id="familyFilter">
             <h3 class="controlpaneltitle">Family Selection Filter</h3>
@@ -79,15 +79,13 @@
             <h3 class="controlpaneltitle">Year Selection Filter</h3>
         </div>
 
-        <div id="separateQuarters">Separate Quarters</div>
 
         <div id="quarterFilter">
             <h3 class="controlpaneltitle">Quarter Selection Filter</h3>
-            <button type="button" class="quarterButton" id="wi">wi</button>
-            <button type="button" class="quarterButton" id="sp">sp</button>
-            <button type="button" class="quarterButton" id="su">su</button>
-            <button type="button" class="quarterButton" id="au">au</button>
         </div>
+
+        <button id="separateQuarters">Separate Quarters</button>
+
     </div>
 
     <div id="legend">

@@ -10,18 +10,17 @@ import { NODE_SIZE,
         Y_TEXT_MEDIUM,
         Y_TEXT_LARGE,
         YEAR_GAP,
-        QUARTER_GAP
+        QUARTER_GAP,
+        QUARTERS
     } from './index.js';
 import { Queue } from './Queue.js';
 import { autocomplete } from './autocomplete.js';
 
-const QUARTERS = ['wi', 'sp', 'su', 'au'];
-const HEIGHT_ADJUST = 50;
 const COLOR = d3.scaleOrdinal(d3.schemeCategory10);
 
 let separateQuarters = false;
 let width = document.getElementById("vizContainer").clientWidth;
-let height = window.innerHeight - HEIGHT_ADJUST;
+let height = window.innerHeight;
 let filterSet = new Set();
 let quarterFilter = new Set();
 let focusNodes = new Set();
@@ -51,18 +50,20 @@ let zoom = d3.zoom()
         let x0 = b.x;
         let x1 = b.x + b.width;
         let t = d3.event.transform;
-        if (t.invertX(0) > x0) t.x = -x0 * t.k;
-        else if (t.invertX(width) < x1) t.x = width - x1 * t.k;
+        if (t.k <= 1.2) {
+            if (t.invertX(0) > x0) t.x = -x0 * t.k;
+            else if (t.invertX(width) < x1) t.x = width - x1 * t.k;
+        }
         graphContainer.attr("transform", t);
     });
 
-zoom.scaleExtent([.1, 1]);
+zoom.scaleExtent([.1, 5]);
 
 window.onresize = resizeWindow;
 
 function resizeWindow() {
     width = document.getElementById("vizContainer").clientWidth;
-    height = window.innerHeight - HEIGHT_ADJUST;
+    height = window.innerHeight;
     d3.select("#viz").attr("viewBox", `0 0 ${width} ${height}`);
 }
 
@@ -138,7 +139,7 @@ export function loadGraphFromJson(graph) {
 
             button.append("button")
                 .style("background-color", (d) => colorCohort(maxCohortCountInYear(cohortCounts, d)))
-                .style("opacity", 0.3)
+                .style("opacity", LIGHT_OPACITY)
                 .attr("type", "button")
                 .attr("id", (d) => d)
                 .text(function(d) { return "20" + d; })
@@ -148,7 +149,7 @@ export function loadGraphFromJson(graph) {
                         d3.select(this).style("opacity", 1);
                     } else {
                         filterSet.add(d);
-                        d3.select(this).style("opacity", 0.3);
+                        d3.select(this).style("opacity", LIGHT_OPACITY);
                     }
                     filter()
                 })
@@ -156,7 +157,7 @@ export function loadGraphFromJson(graph) {
                     d3.select(this).style("opacity", "0.5");
                 })
                 .on("mouseout", function() {
-                    d3.select(this).style("opacity", (d) => filterSet.has(d) ? 0.3 : 1);
+                    d3.select(this).style("opacity", (d) => filterSet.has(d) ? LIGHT_OPACITY : 1);
                 });
         }
 
@@ -324,7 +325,7 @@ function renderGraph() {
     simulation.nodes(data.nodes);
     simulation.force("link").links(data.links);
     simulation.force("y", d3.forceY(function (d) { 
-        height = window.innerHeight - HEIGHT_ADJUST;
+        height = window.innerHeight;
         let quarter = d.cohort.substring(2);
         let minYear = parseInt(Math.min(...data.nodes.map((d) => d.cohort.substring(0, 2))));
         let space = separateQuarters ? QUARTER_GAP : YEAR_GAP;
