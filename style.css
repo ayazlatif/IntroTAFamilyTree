@@ -129,7 +129,7 @@ html,body {
 }
 
 #infoPanel {
-    background-color: red;
+    background-color: #17becf;
     grid-column: 1 / 2;
     grid-row: 1;
     padding: 10px;
@@ -147,6 +147,18 @@ html,body {
     grid-column: 2 / 4;
     grid-row: 1;
 }
+
+.social-footer-icons {
+    position: absolute;
+    right: 0px;
+    bottom: 0px;
+    padding: 10px;
+  } 
+
+  .menu li {
+      display: inline;
+      font-size: 16pt;
+  }
 
 #controlpanel {
     position: absolute;
