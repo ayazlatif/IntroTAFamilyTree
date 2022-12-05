@@ -345,6 +345,14 @@ img {
       background-color: lightseagreen;
   }
 
+  #ConnectWithMeButton {
+      background-color: lightskyblue;
+  }
+
+  a+a {
+    margin-left: 10px;
+  }
+
   #NicknamesButton:hover, #NicknamesButton.active {
     background-color: lightgreen;
 }

@@ -74,9 +74,8 @@ export let buildInfoPanel = ((data, color, lineage) => {
         );
     }
 
-    function createExpandableList(listName, list, decorator = '') {
+    function createExpandableList(listName, list, icon) {
         let button = document.createElement("button");
-        button.id = `${listName}Button`;
         button.className = "collapsible";
         button.addEventListener("click", function() {
             this.classList.toggle("active");
@@ -88,21 +87,47 @@ export let buildInfoPanel = ((data, color, lineage) => {
             }
         });
         button.type = "button";
-        button.innerHTML = `<i class="fas fa-address-card"></i> ${listName}`;
+        button.innerHTML = `<i class="fas ${icon}"></i> ${listName}`;
         let content = document.createElement("ul");
         content.className = "expandleList"
-        content.id = `${listName}Content`;
         content.className = "content";
 
         list.forEach(function (elm) {
             let p = document.createElement("li");
-            p.textContent = `${elm}`;
+            p.appendChild(elm);
             content.appendChild(p);
         });
 
         document.getElementById("infoPanel").appendChild(button);
         document.getElementById("infoPanel").appendChild(content);
+        listName = listName.replaceAll(' ', '');
+        listName = listName.replaceAll('!', '');
+        button.id = `${listName}Button`;
+        content.id = `${listName}Content`;
         button.click()
+        return button
+    }
+
+    function createConnectionDiv() {
+        let connections = document.createElement("div")
+        if (data.linkedin.length > 0) {
+            let a = document.createElement("a");
+            let i = document.createElement("i");
+            a.href = data.linkedin
+            i.className = "fa fa-linkedin"
+            a.appendChild(i);
+            connections.appendChild(a);
+        }
+
+        if (data.github.length > 0) {
+            let a = document.createElement("a");
+            let i = document.createElement("i");
+            a.href = data.github
+            i.className = "fa fa-github"
+            a.appendChild(i);
+            connections.appendChild(a)
+        }
+        createExpandableList("Connect With Me!", [connections], 'fa-link')
     }
 
     resetInfoPanel({clearAll : true});
@@ -113,8 +138,8 @@ export let buildInfoPanel = ((data, color, lineage) => {
     document.getElementById("displayPic").className = "";
 
     document.getElementById("name").innerHTML = data.id;
-    document.getElementsByTagName("h2")[0].innerHTML = `Started ${data.cohort}`;
-    document.getElementsByTagName("h2")[0].style.color = "#242323";
+    document.getElementById("cohortInfo").textContent = `Started ${data.cohort}`;
+    document.getElementById("cohortInfo").style.color = "#242323";
 
     createNumQuartersElement(data.num_142_quarters, '142');
     createNumQuartersElement(data.num_143_quarters, '143');
@@ -127,16 +152,32 @@ export let buildInfoPanel = ((data, color, lineage) => {
 
     createLineageCountDiv();
 
+    if (data.linkedin.length !== 0 || data.github.length !== 0) {
+        createConnectionDiv()
+    }
+
     if (data.kudos || totalQuarters >= VETERAN_COUNT) {
         let kudosList = totalQuarters >= VETERAN_COUNT ? ['Veteran TA'] : [];
         if (data.kudos) {
             kudosList.push(...data.kudos.split(","));
         }
-        createExpandableList("Kudos", kudosList, '<i class="fa fa-award"></i> ');
+
+        kudosList = kudosList.map(x => {
+            let p = document.createElement("p");
+            p.textContent = x;
+            p.style.display = 'inline';
+            p.style.textAlign = 'right';
+            return p;
+        })
+        createExpandableList("Kudos", kudosList, 'fa-fire');
     }
 
     if (data.nicknames) {
-        createExpandableList("Nicknames", data.nicknames.split(","));
+        createExpandableList("Nicknames", data.nicknames.split(",").map(x => {
+            let p = document.createElement("p");
+            p.textContent = x;
+            return p;
+        }), 'fa-address-card');
     }
 });
 
@@ -154,10 +195,15 @@ export let resetInfoPanel = ((clearAll=false) => {
         document.getElementById("NicknamesContent").remove();
     }
 
+    if (document.contains(document.getElementById("ConnectWithMeButton"))) {
+        document.getElementById("ConnectWithMeButton").remove();
+        document.getElementById("ConnectWithMeContent").remove();
+    }
+
     document.getElementById("displayPic").src = "resources/error_pics/no_cohort.svg";
     document.getElementById("displayPic").className = "cohortPic";
     document.getElementById("name").innerHTML = clearAll ? '' : "TA Family Tree Viz"
-    document.getElementsByTagName("h2")[0].innerHTML = "";
+    document.getElementById("cohortInfo").innerHTML = "";
     document.getElementById("num142").innerHTML = "";
     document.getElementById("num143").innerHTML = "";
     document.getElementById("num143x").innerHTML = "";

@@ -46,7 +46,9 @@ window.onload = () => {
                         "img" : '',
                         "children" : [],
                         "kudos" : "" ,
-                        "nicknames" : ""
+                        "nicknames" : "",
+                        "linkedin" : "",
+                        "github" : ""
                     };
                 }
                 if (parent !== "") {
@@ -76,6 +78,8 @@ window.onload = () => {
                 let kudos;
                 let nicknames;
                 let img;
+                let linkedin;
+                let github;
                 [
                     taName,
                     ta142,
@@ -88,7 +92,9 @@ window.onload = () => {
                     cohort,
                     kudos,
                     nicknames,
-                    img
+                    img,
+                    linkedin,
+                    github
                 ] = results[i];
                 tas[taName] = { "id" : taName,
                                 "parent142" : ta142 ? ta142 : '',
@@ -102,7 +108,9 @@ window.onload = () => {
                                 "img" : img,
                                 "children" : [],
                                 "kudos" : kudos ? kudos : '',
-                                "nicknames" : nicknames ? nicknames : ''
+                                "nicknames" : nicknames ? nicknames : '',
+                                "linkedin" : linkedin ? linkedin : '',
+                                "github" : github ? github : ''
                             }
             }
 
