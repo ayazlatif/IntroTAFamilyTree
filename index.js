@@ -16,6 +16,7 @@ export const YEAR_GAP = 200;
 export const QUARTER_GAP = 500;
 export const QUARTERS = ['wi', 'sp', 'su', 'au'];
 
+const API_ENDPOINT = 'https://intro-ta-family-tree.onrender.com';
 
 window.onload = () => {
     initInfoPanel();
@@ -27,7 +28,7 @@ window.onload = () => {
         button.textContent = quarter;
         document.getElementById("quarterFilter").appendChild(button);
     });
-    fetch('https://nameless-atoll-70309.herokuapp.com/api/getTas')
+    fetch(`${API_ENDPOINT}/api/getTas`)
         .then(response => response.json())
         .then(spreadsheet_data => {
             function addEdge(parent, child, relation) {
