@@ -89,6 +89,9 @@ function buildArrowHeads() {
     marker("arrowhead-parent142");
     marker("arrowhead-parent143");
     marker("arrowhead-parent143x");
+    marker("arrowhead-parent121");
+    marker("arrowhead-parent122");
+    marker("arrowhead-parent123");
 }
 
 export function loadGraphFromJson(graph) {
@@ -517,7 +520,7 @@ function getLineage(startId, targetData) {
             if (!elm) {
                 return [];
             }
-            let result = [elm.parent142, elm.parent143, elm.parent143x];
+            let result = [elm.parent142, elm.parent143, elm.parent143x, elm.parent121, elm.parent122, elm.parent123];
             return result.filter((d) => d).map((d) => findData(d, targetData)).filter((d) => d);
         });
     }

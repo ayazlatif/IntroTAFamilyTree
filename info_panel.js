@@ -19,6 +19,9 @@ export let initInfoPanel = () => {
     createTagWithId("h3", "num143");
     createTagWithId("h3", "num143x");
     createTagWithId("h3", "num14x");
+    createTagWithId("h3", "num121");
+    createTagWithId("h3", "num122");
+    createTagWithId("h3", "num123");
     createTagWithId("h3", "total");
     resetInfoPanel();
 }
@@ -146,6 +149,11 @@ export let buildInfoPanel = ((data, color, lineage) => {
     createNumQuartersElement(data.num_143_quarters, '143');
     createNumQuartersElement(data.num_143x_quarters, '143x');
     createNumQuartersElement(data.num_14x_quarters, '14x');
+    createNumQuartersElement(data.num_121_quarters, '121');
+    createNumQuartersElement(data.num_122_quarters, '122');
+    createNumQuartersElement(data.num_123_quarters, '123');
+
+
 
     let totalQuarters = sumQuarters(data);
     document.getElementById("total").innerHTML = `Quarters TA'd: ${totalQuarters}`;
@@ -221,6 +229,9 @@ export let resetInfoPanel = ((clearAll=false) => {
     document.getElementById("num143").innerHTML = "";
     document.getElementById("num143x").innerHTML = "";
     document.getElementById("num14x").innerHTML = "";
+    document.getElementById("num121").innerHTML = "";
+    document.getElementById("num122").innerHTML = "";
+    document.getElementById("num123").innerHTML = "";
     document.getElementById("total").innerHTML = "";
     document.getElementById("shareMe").innerText = "";
     document.getElementById("cohortTAs").innerHTML = clearAll ? '' : `<p style="color:#232424;">Welcome to the TA "family" tree!</p>
@@ -259,7 +270,8 @@ export let displayCohort = ((cohort, people) => {
 function sumQuarters(taData) {
     return parseInt(taData.num_142_quarters) +
         parseInt(taData.num_143_quarters) + parseInt(taData.num_143x_quarters) +
-        parseInt(taData.num_14x_quarters);
+        parseInt(taData.num_14x_quarters) + parseInt(taData.num_121_quarters) +
+        parseInt(taData.num_122_quarters) + parseInt(taData.num_123_quarters);
 }
 
 function createDisplayPicture(imgUrl, errorPic) {

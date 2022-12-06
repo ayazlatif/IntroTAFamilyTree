@@ -48,7 +48,13 @@ window.onload = () => {
                         "kudos" : "" ,
                         "nicknames" : "",
                         "linkedin" : "",
-                        "github" : ""
+                        "github" : "",
+                        "parent121" : "",
+                        "parent122" : "",
+                        "parent123" : "",
+                        "num_121_quarters" : 0,
+                        "num_122_quarters" : 0,
+                        "num_123_quarters" : 0
                     };
                 }
                 if (parent !== "") {
@@ -80,6 +86,12 @@ window.onload = () => {
                 let img;
                 let linkedin;
                 let github;
+                let ta121;
+                let ta122;
+                let ta123;
+                let num121;
+                let num122;
+                let num123;
                 [
                     taName,
                     ta142,
@@ -94,7 +106,13 @@ window.onload = () => {
                     nicknames,
                     img,
                     linkedin,
-                    github
+                    github,
+                    ta121,
+                    ta122,
+                    ta123,
+                    num121,
+                    num122,
+                    num123
                 ] = results[i];
                 tas[taName] = { "id" : taName,
                                 "parent142" : ta142 ? ta142 : '',
@@ -110,7 +128,13 @@ window.onload = () => {
                                 "kudos" : kudos ? kudos : '',
                                 "nicknames" : nicknames ? nicknames : '',
                                 "linkedin" : linkedin ? linkedin : '',
-                                "github" : github ? github : ''
+                                "github" : github ? github : '',
+                                "parent121" : ta121 ? ta121 : '',
+                                "parent122" : ta122 ? ta122 : '',
+                                "parent123" : ta123 ? ta123 : '',
+                                "num_121_quarters" : num121 ? num121 : 0,
+                                "num_122_quarters" : num122 ? num122 : 0,
+                                "num_123_quarters" : num123 ? num123 : 0
                             }
             }
 
@@ -120,6 +144,9 @@ window.onload = () => {
                 addEdge(tas[taName]["parent142"], taName, "parent142")
                 addEdge(tas[taName]["parent143"], taName, "parent143")
                 addEdge(tas[taName]["parent143x"], taName, "parent143x")
+                addEdge(tas[taName]["parent121"], taName, "parent121")
+                addEdge(tas[taName]["parent122"], taName, "parent122")
+                addEdge(tas[taName]["parent123"], taName, "parent123")
             });
 
             let nodes = [];
