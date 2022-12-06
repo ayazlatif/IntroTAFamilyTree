@@ -194,7 +194,13 @@ export function loadGraphFromJson(graph) {
         years.forEach((y) => filterSet.add(y));
         renderYearButtons();
 
-        document.getElementById(getRandomYear(years)).click();
+        let urlParams = new URLSearchParams(window.location.search);
+        let name = urlParams.get('name');
+        if (name !== null) {
+            selectPerson(name);
+        } else {
+            document.getElementById(getRandomYear(years)).click();
+        }
     }
 
     function filter() {
@@ -234,6 +240,38 @@ export function loadGraphFromJson(graph) {
         node.call(updateNode);
         link.call(updateLink);
     }
+}
+
+function selectPerson(name) {
+    let personDatum = findData(name, allData);
+    buildInfoPanel(personDatum, colorCohort(personDatum.cohort), getLineage(name, allData));
+    let person;
+    d3.select(".nodes").selectAll("g").each(function(d) {
+        if (d.id === name) {
+            person = this;
+        }
+    });
+
+    if (!person) {
+        let person = allData.nodes.filter((d) => d.id === name)[0];
+        let cohort = person.cohort;
+        let year = cohort.substring(0, 2);
+        let quarter = cohort.substring(2);
+        focusNodes.add(name);
+        if (filterSet.has(year)) {
+            document.getElementById(year).click();
+        }
+        if (quarterFilter.has(quarter)) {
+            document.getElementById(quarter).click();
+        }
+        return;
+    }
+
+    focusNodes.add(name);
+    getLineageSet(getLineage(name, data)).forEach((a) => lightNodes.add(a));
+
+    d3.select(person).dispatch("mouseout"); // focus on this
+    console.log(focusNodes);
 }
 
 function renderGraph() {
@@ -344,6 +382,10 @@ function renderGraph() {
 
     document.getElementById("searchBtn").onclick = function() {
         let name = document.getElementById("myInput").value;
+        selectPerson(name);
+    };
+
+    function selectPerson(name) {
         let personDatum = findData(name, allData);
         buildInfoPanel(personDatum, colorCohort(personDatum.cohort), getLineage(name, allData));
         let person;
@@ -373,7 +415,7 @@ function renderGraph() {
 
         d3.select(person).dispatch("mouseout"); // focus on this
         console.log(focusNodes);
-    };
+    }
 
     document.getElementById("reset").onclick = resetSearch;
     autocomplete(document.getElementById("myInput"), allData.nodes.map((el) => el.id));

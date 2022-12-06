@@ -12,6 +12,7 @@ export let initInfoPanel = () => {
     img.id = "displayPic";
     document.getElementById("pic").appendChild(img);
     createTagWithId("h1", "name");
+    createTagWithId("div", "shareMe");
     createTagWithId("h2", "cohortInfo");
     createTagWithId("div", "cohortTAs");
     createTagWithId("h3", "num142");
@@ -156,6 +157,18 @@ export let buildInfoPanel = ((data, color, lineage) => {
         createConnectionDiv()
     }
 
+    let share = document.getElementById("shareMe");
+    let button = document.createElement("button");
+    button.textContent = 'Share this TA'
+    button.onclick = function() {
+        let name = data.id.replaceAll(' ', '%20');
+        let link = `https://ayazlatif.github.io/IntroTAFamilyTree/?name=${name}`;
+        navigator.clipboard.writeText(link).then(() => {
+            alert(`Content copied to clipboard ${link}`);
+        });
+    };
+    share.appendChild(button);
+
     if (data.kudos || totalQuarters >= VETERAN_COUNT) {
         let kudosList = totalQuarters >= VETERAN_COUNT ? ['Veteran TA'] : [];
         if (data.kudos) {
@@ -209,6 +222,7 @@ export let resetInfoPanel = ((clearAll=false) => {
     document.getElementById("num143x").innerHTML = "";
     document.getElementById("num14x").innerHTML = "";
     document.getElementById("total").innerHTML = "";
+    document.getElementById("shareMe").innerText = "";
     document.getElementById("cohortTAs").innerHTML = clearAll ? '' : `<p style="color:#232424;">Welcome to the TA "family" tree!</p>
 
     <p style="font-size:11pt;color:#232424;width:100%;">This displays the hiring data and the 

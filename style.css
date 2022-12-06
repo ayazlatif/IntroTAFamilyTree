@@ -345,6 +345,12 @@ img {
       background-color: lightseagreen;
   }
 
+  #shareMe button {
+      padding: 10px;
+      width: 100%;
+      background-color: mediumpurple;
+  }
+
   #ConnectWithMeButton {
       background-color: lightskyblue;
   }
